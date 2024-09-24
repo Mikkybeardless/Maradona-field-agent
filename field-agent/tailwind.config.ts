@@ -9,9 +9,14 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: "var(--background)",
-        foreground: "var(--foreground)",
+        orange: "#E65800",
+        black: "#040421",
+        grey: "#808080",
+        "light-grey": "#DED9DD"
       },
+      fontFamily: {
+        'work-sans': ['var(--font-work-sans)']
+      }
     },
   },
   plugins: [],
