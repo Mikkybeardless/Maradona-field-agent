@@ -1,15 +1,25 @@
+'use client'
+
+import { OTPInput } from '../otp-input/otp-input';
 import styles from './styles.module.css';
 import Link from 'next/link';
+import { useEffect, useState } from "react";
 
 export const EnterOTPCard = () => {
     return (
-        <>
+        <section>
             <div className={styles.card}>
                 <header className='mb-8 space-y-4 text-center mx-auto w-11/12'>
                     <h5 className='font-medium text-black text-2xl'>Enter OTP</h5>
                     <h6 className='text-grey text-sm leading-tight'>Please enter the 4 digit code that was sent to you.</h6>
                 </header>
-                <h6 className='text-grey text-sm mb-4 w-fit mx-auto'>Didn&apos;t get a code? send again</h6>
+                <div className='my-7 space-y-3.5'>
+                    <OTPInput length={4} />
+                    <div className='mx-auto w-fit'>
+                        <CountdownTimer />
+                    </div>
+                </div>
+                <h6 className='text-grey text-sm mb-5 w-fit mx-auto'>Didn&apos;t get a code? send again</h6>
                 <Link href=''>
                     <button type='button' className='bg-orange w-full p-4 rounded-md text-white font-medium'>
                         Verify
@@ -23,6 +33,29 @@ export const EnterOTPCard = () => {
                 </svg>
                 Back to Login
             </Link>
-        </>
+        </section>
+    );
+};
+
+const CountdownTimer: React.FC = () => {
+    const [timeLeft, setTimeLeft] = useState<number>(60);
+
+    useEffect(() => {
+        // Exit early if timeLeft is 0
+        if (timeLeft === 0) return;
+
+        // Set up an interval to decrease timeLeft by 1 every second
+        const intervalId = setInterval(() => {
+            setTimeLeft((prevTime) => prevTime - 1);
+        }, 1000);
+
+        // Clean up the interval when the component unmounts or timeLeft changes
+        return () => clearInterval(intervalId);
+    }, [timeLeft]);
+
+    return (
+        <div>
+            <p className='text-sm'>{timeLeft > 0 ? `0:${timeLeft}` : "Time's up!"}</p>
+        </div>
     );
 };
