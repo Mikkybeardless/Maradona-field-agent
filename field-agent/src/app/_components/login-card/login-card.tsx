@@ -51,7 +51,7 @@ export const LoginCard = () => {
 						</div>
 					</div>
 
-					<Link href='/dashboard/home'>
+					<Link href='/dashboard/overview'>
 						<button type='submit' className='bg-orange w-full p-4 rounded-md text-white font-medium'>
 							Login
 						</button>
