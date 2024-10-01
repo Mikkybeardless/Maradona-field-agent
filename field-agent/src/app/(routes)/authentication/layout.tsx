@@ -4,7 +4,7 @@ export default function LoginLayout({
     children: React.ReactNode
 }) {
     return (
-        <section className="bg-['#FFFCFA']">
+        <section className="bg-['#FAFAFA']">
             {children}
         </section>
     )

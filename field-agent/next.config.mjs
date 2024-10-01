@@ -12,6 +12,11 @@ const nextConfig = {
 				destination: '/authentication/login',
 				permanent: true,
 			},
+			{
+				source: '/dashboard',
+				destination: '/dashboard/home',
+				permanent: true,
+			},
 		];
 	},
 };
