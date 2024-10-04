@@ -1,9 +1,11 @@
+import { DashboardNav } from '@/app/_components/dashboard-nav/dashboard-nav';
 import { InspectionRequestsTable } from '@/app/_components/inspection-requests-table/inspection-requests-table';
 import { ArrowDown2, Edit2, SearchNormal1 } from 'iconsax-react';
 
 export default function Page() {
 	return (
 		<section>
+			<DashboardNav />
 			<header className='mt-40 flex items-end justify-between mb-32'>
 				<div className='space-y-2.5'>
 					<p className='text-3xl font-semibold'>
@@ -32,30 +34,21 @@ export default function Page() {
 				<div className='w-full px-10 py-7 bg-white rounded-lg'>
 					<div className='w-fit mx-auto flex items-center *:text-center *:px-12'>
 						<div className='space-y-3 text-orange border-r border-light-grey'>
-							<h6 className='text-sm'>
-								Total Inspections Completed
-							</h6>
+							<h6 className='text-sm'>Total Inspections Completed</h6>
 							<p className='text-lg'>230</p>
 						</div>
 						<div className='space-y-3 text-[#A6A619] border-r border-light-grey'>
-							<h6 className='text-sm'>
-								Pending Inspections
-							</h6>
+							<h6 className='text-sm'>Pending Inspections</h6>
 							<p className='text-lg'>53</p>
 						</div>
 						<div className='space-y-3 text-[#008000] border-r border-light-grey'>
-							<h6 className='text-sm'>
-								Upcoming Inspections
-							</h6>
+							<h6 className='text-sm'>Upcoming Inspections</h6>
 							<p className='text-lg'>530</p>
 						</div>
 						<div className='space-y-3 text-[#121488]'>
-							<h6 className='text-sm'>
-								Recent Verifications
-							</h6>
+							<h6 className='text-sm'>Recent Verifications</h6>
 							<p className='text-lg'>1,200</p>
 						</div>
-
 					</div>
 				</div>
 			</section>
@@ -79,7 +72,7 @@ export default function Page() {
 						</div>
 						<div className='flex items-center gap-2.5 w-[18.75rem] border border-grey/70 rounded-lg px-4 py-2'>
 							<SearchNormal1 size={20} />
-							<input type='search' className='w-full text-sm' placeholder='Search agents' />
+							<input type='search' className='w-full text-sm outline-none' placeholder='Search agents' />
 						</div>
 					</header>
 					<InspectionRequestsTable />

@@ -2,8 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
+/* globals.css */
+:root {
+	--font-work-sans: 'Work Sans', system-ui;
+}
+
 body {
-	/* font-family: 'Work Sans'; */
+	font-family: var(--font-work-sans);
 }
 
 @layer utilities {

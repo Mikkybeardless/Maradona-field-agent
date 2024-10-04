@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import logo from '@/app/_assets/images/logo.png';
 import { Chart1, Home2, Setting, Notification, SearchNormal1 } from 'iconsax-react';
+import Link from 'next/link';
 
 export const DashboardNav = () => {
 	return (
@@ -16,9 +17,13 @@ export const DashboardNav = () => {
 				<div className='flex items-center gap-7'>
 					<Home2 size={24} color='#E65800' />
 					<Setting size={24} color='#000000' />
-					<Chart1 size={24} color='#000000' />
+					<Link href='/dashboard/inspection-requests'>
+						<Chart1 size={24} color='#000000' />
+					</Link>
 					<Notification size={24} color='#000000' />
-					<div className='size-9 rounded-full bg-gray-400'></div>
+					<Link href='/dashboard/profile'>
+						<div className='size-9 rounded-full bg-gray-400'></div>
+					</Link>
 				</div>
 			</section>
 		</>
