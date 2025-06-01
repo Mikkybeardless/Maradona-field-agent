@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* globals.css */
+:root {
+	--font-work-sans: 'Work Sans', system-ui;
+}
+
+body {
+	font-family: var(--font-work-sans);
+	background-color: #FAFAFA;
+}
+
+@layer utilities {
+	.text-balance {
+		text-wrap: balance;
+	}
+}
