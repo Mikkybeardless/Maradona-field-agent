@@ -1,12 +1,56 @@
+"use client";
 import { InspectionRequestsTable } from "@/app/_components/inspection-requests-table/inspection-requests-table";
-import { Edit2,  SearchNormal1 } from "iconsax-react";
+import { Export, SearchNormal1 } from "iconsax-react";
 import { DateSelect } from "../../../_components/common/dateSelect";
 import Link from "next/link";
+import { HiOutlinePencil } from "react-icons/hi";
+import { FaRegClock } from "react-icons/fa";
+import { GoDotFill } from "react-icons/go";
+import { useEffect } from "react";
+import inspectionService from "@/app/api/services/inspection.service";
 
 export default function Page() {
+  const rows = () => {
+    const data = Array.from({ length: 100 }, (_, i) => ({
+      id: i + 1,
+      requestId: `Request ID ${i + 1}`,
+      itemName: `Item Name ${i + 1}`,
+      category: i % 2 === 0 ? "Land" : "Vehicle",
+      date: `Date ${i + 1}`,
+      status:
+        i < 5
+          ? "Approved"
+          : i < 10 && i > 5
+          ? "Pending"
+          : i < 15 && i > 10
+          ? "Active"
+          : "Scheduled",
+    }));
+    return data;
+  };
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await inspectionService.getInspections();
+        console.log("Inspection Requests:", response);
+      } catch (error) {
+        console.error("Error fetching inspections:", error);
+      }
+    };
+    const fetchById = async () => {
+      try {
+        const response = await inspectionService.getInspection(4);
+        console.log("Inspection Request by ID:", response);
+      } catch (error) {
+        console.error("Error fetching inspection by ID:", error);
+      }
+    };
+    fetchById();
+    fetchData();
+  }, []);
   return (
     <section className="flex bg-white mt-5 flex-col gap-4 py-10">
-      <header className=" px-6 py-4 space-y-6">
+      <header className=" px-2 md:px-6 py-4 space-y-6">
         <div className="flex  justify-between items-end bg-[#FFEFE6] border border-[#FEB68A] rounded-lg px-5 py-4">
           <button className="hover:underline">Add Payment Info</button>
           <button>X</button>
@@ -14,19 +58,19 @@ export default function Page() {
 
         <div className="flex items-center bg-white justify-between">
           <div className="space-y-2.5">
-            <p className="text-2xl flex gap-x-2 font-semibold">
+            <p className="md:text-2xl flex gap-x-2 font-semibold">
               <span>👋</span>
-              Welcome back Rose!
+              Welcome back Rose! <GoDotFill className="text-blue-700" />
             </p>
-            <div className="flex items-center gap-2">
+            <div className="flex md:items-center gap-1 md:gap-2">
               <p className="text-[#5C4D58] text-xs">
                 Last login:{" "}
                 <span className="text-[#150A13]">Sept 25, 2024</span>
               </p>
-              <div className="size-[2px] bg-green-950"></div>
+              <FaRegClock />
               <p className="text-xs">12:30pm</p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 md:gap-2">
               <p className="px-2 rounded-full py-1 text-sm text-[#4A1E11] bg-[#FCDFD7]">
                 Agent
               </p>
@@ -39,33 +83,32 @@ export default function Page() {
             </div>
           </div>
 
-          <Link
-            href="/dashboard/profile">
-          <button
-            type="button"
-            className="rounded-md px-2 py-1 flex items-center gap-2 border border-orange text-orange "
-          >
-            <Edit2 size={24} />
-            Edit Profile
-          </button>
+          <Link href="/dashboard/profile">
+            <button
+              type="button"
+              className="rounded-md px-2 py-1 text-xs md:text-base flex items-center gap-1 md:gap-2 border border-orange text-orange "
+            >
+              <HiOutlinePencil className="size-[20px] md:size-[24px]" />
+              Edit Profile
+            </button>
           </Link>
         </div>
       </header>
       <section className="px-6 py-4 bg-[#F0F0F0] space-y-6">
         <h6 className="text-black font-medium mb-5"> Statistics Overview</h6>
-        <div className="w-full px-5 py-7 bg-white rounded-lg">
-          <div className="w-full  flex items-center justify-evenly *:px-12">
-            <div className="space-y-3  border-r border-light-grey">
+        <div className="w-full px-2 md:px-5 py-7 bg-white rounded-xl md:rounded-lg">
+          <div className="w-full  flex flex-col md:flex-row md:items-center justify-evenly *:px-12 *:py-4">
+            <div className="space-y-3  border-b md:border-b-0 md:border-r border-light-grey">
               <h6 className="text-sm text-[#585858]">
                 Total Inspections Completed
               </h6>
               <p className="text-lg font-bold">230</p>
             </div>
-            <div className="space-y-3  border-r border-light-grey">
+            <div className="space-y-3    border-b md:border-b-0 md:border-r border-light-grey">
               <h6 className="text-sm text-[#585858]">Pending Inspections</h6>
               <p className="text-lg font-bold">53</p>
             </div>
-            <div className="space-y-3  border-r border-light-grey">
+            <div className="space-y-3  border-b md:border-b-0 md:border-r border-light-grey">
               <h6 className="text-sm text-[#585858]">Upcoming Inspections</h6>
               <p className="text-lg font-bold">530</p>
             </div>
@@ -76,13 +119,19 @@ export default function Page() {
           </div>
         </div>
       </section>
-      <section className="px-6 py-4 space-y-6">
-        <h6 className="text-black font-medium text-xl mb-5">
-          Inspection Requests
-        </h6>
-        <div className="bg-white rounded-lg p-6">
-          <header className="w-full flex items-center justify-between">
-            <div className="flex items-center gap-3">
+      <section className="px-2  md:px-6 py-4 space-y-6">
+        <div className="flex items-center justify-between">
+          <h6 className="text-black font-medium md:text-xl mb-5">
+            Inspection Requests
+          </h6>
+          <button className="px-4 py-1 md:px-6 md:py-2 flex items-center gap-1 bg-orange text-white rounded-lg hover:bg-orange-600">
+            <Export size="20" /> Export
+          </button>
+        </div>
+
+        <div className="bg-white rounded-lg md:p-6">
+          <header className="w-full flex flex-wrap gap-3   items-center justify-between">
+            <div className="flex items-center flex-wrap gap-3">
               <div className="text-sm px-4 py-1.5 border border-grey/40 rounded-lg flex items-center gap-2">
                 <select className="outline-none bg-transparent p-1">
                   <option value="all">Category</option>
@@ -102,9 +151,14 @@ export default function Page() {
                 </select>
               </div>
 
-              <DateSelect value={null} />
+              <DateSelect
+                onChange={(val) => {
+                  console.log("date:", val);
+                }}
+                value={null}
+              />
             </div>
-            <div className="flex items-center gap-2.5 w-[18.75rem] border border-grey/70 rounded-lg px-4 py-2">
+            <div className="flex items-center gap-2.5 w-[18.75rem] border border-grey/40 rounded-lg px-4 py-2">
               <SearchNormal1 size={20} />
               <input
                 type="search"
@@ -113,7 +167,7 @@ export default function Page() {
               />
             </div>
           </header>
-          <InspectionRequestsTable />
+          <InspectionRequestsTable rows={rows()} />
         </div>
       </section>
     </section>

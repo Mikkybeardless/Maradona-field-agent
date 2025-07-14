@@ -19,8 +19,8 @@ type LineProps = {
   lineWidth: number;
 };
 
-interface ComponentProps {
-  chartData: any[];
+interface ComponentProps<T> {
+  chartData: T[];
   lines: LineProps[];
   legend?: boolean;
   tickCount?: number;
@@ -30,7 +30,7 @@ interface ComponentProps {
   tooltipTextColor?: string; // Add dynamic text color for Toolt
 }
 
-export default function LineChartComponent({
+export default function LineChartComponent<T>({
   chartData,
   lines,
   legend,
@@ -39,7 +39,7 @@ export default function LineChartComponent({
   paddingX,
   tooltipBgColor = "#fff", // Default background color
   tooltipTextColor = "#333", // Default text colo
-}: ComponentProps) {
+}: ComponentProps<T>) {
   return (
     <ResponsiveContainer width="100%" height="100%">
       <LineChart

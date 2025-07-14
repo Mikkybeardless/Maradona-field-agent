@@ -6,9 +6,9 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
 } from "recharts";
+import { useWindowResizer } from "../hooks/useWindowResize";
 
 const data = [
   {
@@ -50,6 +50,8 @@ const data = [
 ];
 
 export default function StackedBarChart() {
+
+  const {isMobile} = useWindowResizer();
   return (
     <div className="bg-white w-full ">
       <ResponsiveContainer width="100%" height={400}>
@@ -57,7 +59,7 @@ export default function StackedBarChart() {
           data={data}
           margin={{
             top: 20,
-            right: 30,
+            right: isMobile ? 0 : 30,
             left: 0,
             bottom: 5,
           }}

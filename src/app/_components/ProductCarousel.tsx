@@ -30,7 +30,7 @@ export default function ProductCarousel({ images }: { images: string[] }) {
         {/* Main image with navigation controls positioned outside */}
         <div className="flex items-center">
           {/* Left Chevron - now outside the image */}
-          <div className="mr-3">
+          <div className="hidden md:block mr-3">
             <button
               onClick={goToPrevious}
               className="bg-white hover:bg-gray-100 rounded-full p-2 shadow-lg transition-all"
@@ -41,16 +41,16 @@ export default function ProductCarousel({ images }: { images: string[] }) {
           </div>
 
           {/* Main image container */}
-          <div className="flex-grow w-40 md:w-[486px] h-fit max-h-96 rounded-3xl overflow-hidden mb-4">
+          <div className="flex-grow w-40 md:w-[486px] h-fit max-h-96  overflow-hidden mb-4">
             <img
               src={images[currentIndex]}
               alt={`Product image ${currentIndex + 1}`}
-              className="w-full h-full rounded-lg object-contain"
+              className="w-full h-full object-contain"
             />
           </div>
 
           {/* Right Chevron - now outside the image */}
-          <div className="ml-3">
+          <div className="hidden md:block  ml-3">
             <button
               onClick={goToNext}
               className="bg-white hover:bg-gray-100 rounded-full p-2 shadow-lg transition-all"

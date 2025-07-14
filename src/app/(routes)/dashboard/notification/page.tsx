@@ -35,13 +35,13 @@ export default function Page() {
   };
 
   return (
-    <section className=" px-20 py-10">
-      <div className="w-full  max-w-[60rem] mx-auto bg-white rounded-lg shadow-md">
+    <section className=" md:px-20 md:py-10">
+      <div className="w-full  md:max-w-[60rem]  mx-auto bg-white rounded-lg shadow-md">
         <header className="px-6 py-4 border-b border-gray-300 space-y-6">
-          <h2 className="text-2xl font-semibold">Updates</h2>
+          <h2 className="md:text-2xl font-semibold">Updates</h2>
         </header>
 
-        <div className="px-6 space-y-5 py-4 rounded-lg">
+        <div className="md:px-6 px-2 space-y-5 py-4 rounded-lg">
           <h3 className="font-semibold text-lg">Today</h3>
           <RequestCard request={request} />
           <InspectionCard inspection={inspection} />

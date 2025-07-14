@@ -16,6 +16,15 @@ import { BsStars } from "react-icons/bs";
 import { LuHouse } from "react-icons/lu";
 import { BookingModal } from "@/app/_components/modals/booking-modal";
 import { SellerInfoModal } from "@/app/_components/modals/sellerInfo-modal";
+import { FaCheck, FaTimes } from "react-icons/fa";
+import { RiErrorWarningLine } from "react-icons/ri";
+import { ApproveModal } from "@/app/_components/modals/approve-modal";
+import { DeclineModal } from "@/app/_components/modals/decline-modal";
+
+type Schedule = {
+  date: string;
+  time: string;
+};
 
 export default function Page() {
   const items = [
@@ -49,18 +58,49 @@ export default function Page() {
   const [selectedSession, setSelectedSession] = useState<string | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [BookModal, setBookModal] = useState<boolean>(false);
-  const [contactModal, setContactModal] = useState(false)
-
-  const openModal = () => setModalOpen(true);
-  const closeModal = () => setModalOpen(false);
+  const [contactModal, setContactModal] = useState(false);
+  const [schedule, setShedule] = useState<Schedule>({ date: "", time: "" });
+  const [approvedModal, setApprovedModal] = useState<boolean>(false);
+  const [declinedModal, setDeclinedModal] = useState<boolean>(false);
 
   return (
-    <div className=" flex flex-col gap-14">
-      <RescheduleModal isOpen={isModalOpen} onClose={closeModal} />
-      <BookingModal isOpen={BookModal} onClose={() => setBookModal(false)} />
-        <SellerInfoModal isOpen= {contactModal} onClose={()=> setContactModal(false)}/>
+    <div className=" flex flex-col  gap-14">
+      <RescheduleModal
+        isOpen={isModalOpen}
+        onClose={() => setModalOpen(false)}
+      />
+      <BookingModal
+        isOpen={BookModal}
+        onClose={() => setBookModal(false)}
+        onConfirm={() =>
+          setShedule({
+            date: selectedSession || "",
+            time: selectedTime || "",
+          })
+        }
+      />
+      <SellerInfoModal
+        isOpen={contactModal}
+        onClose={() => setContactModal(false)}
+      />
+      <ApproveModal
+        isOpen={approvedModal}
+        onApprove={() => {
+          console.log("Approved");
+          setApprovedModal(false);
+        }}
+        onClose={() => setApprovedModal(false)}
+      />
+      <DeclineModal
+        onDecline={() => {
+          console.log("Declined");
+          setDeclinedModal(false);
+        }}
+        isOpen={declinedModal}
+        onClose={() => setDeclinedModal(false)}
+      />
       <section className="">
-        <div className="flex items-center gap-2.5 my-7 ">
+        <div className="md:flex items-center hidden gap-2.5 my-7 ">
           <Link className="text-xs" href="/dashboard/overview">
             Home
           </Link>
@@ -75,18 +115,23 @@ export default function Page() {
         </div>
         <section>
           <header className="flex items-center justify-between mb-16">
-            <h6 className="text-black text-2xl font-semibold mb-5">
+            <h6 className="text-black text-2xl font-semibold">
               Inspection Detail
             </h6>
-            <div className="flex items-center gap-5">
+
+            {/* Desktop */}
+            <div className="hidden md:flex items-center gap-5">
               <span className="">Status</span>
               <span className="bg-[#FFFAEB] flex gap-x-1 items-center text-orange px-5 rounded-lg py-3">
                 <GoDotFill /> Pending
               </span>
             </div>
+
+            {/* Mobile */}
+            <button className="underline md:hidden ">Mark as completed</button>
           </header>
           <section>
-            <div className="flex ">
+            <div className="flex flex-col md:flex-row gap-10 items-start justify-between">
               {/* Left */}
               <section className="w-full md:w-[50%] ">
                 <ProductCarousel
@@ -135,6 +180,42 @@ export default function Page() {
                       })}
                       <p className="text-[#585858]">214 reviews</p>
                     </div>
+
+                    {schedule.date.trim() && schedule.time.trim() && (
+                      <div className="space-y-3 ">
+                        <div className="p-4 bg-[#DCFAE6] rounded-xl">
+                          <div className="flex items-center gap-2 mb-3">
+                            <RiErrorWarningLine size={24} />
+                            <p className="text-[#585858]">
+                              You have scheduled an inspection for{" "}
+                              {schedule.date} at {schedule.time}
+                            </p>
+                          </div>
+
+                          <button
+                            className="underline hover:text-blue-600"
+                            onClick={() => setContactModal(true)}
+                          >
+                            Contact Seller
+                          </button>
+                        </div>
+
+                        <div className="flex gap-5 justify-between">
+                          <button
+                            onClick={() => setApprovedModal(true)}
+                            className="bg-orange flex items-center gap-3 justify-center hover:bg-inherit hover:border-orange hover:text-orange border rounded-xl py-2 w-full text-white"
+                          >
+                            <FaCheck /> Approve
+                          </button>
+                          <button
+                            onClick={() => setDeclinedModal(true)}
+                            className="hover:bg-orange flex items-center gap-3 justify-center bg-inherit border-orange text-orange border rounded-xl py-2 w-full hover:text-white"
+                          >
+                            <FaTimes /> Decline
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                   <div className="bg-white p-4 rounded-lg space-y-4 shadow-md">
                     <h5 className="font-medium text-lg mb-2">
@@ -166,22 +247,27 @@ export default function Page() {
                       <p>Choose Time</p>
                       <hr className="mb-4" />
                       <div className="flex items-center gap-x-7 overflow-x-auto mt-4">
-                        {["Sun", "Mon", "Tues", "Wed", "Thur", "Fri"].map(
-                          (item, i) => (
-                            <button
-                              key={i}
-                              onClick={() => setSelectedTime(item)}
-                              className={`${
-                                selectedTime === item &&
-                                "bg-[#E8E8F4] border-[#4345AA] border"
-                              } rounded-lg p-2 mb-2 shadow-md  items-center gap-1 `}
-                            >
-                              <span className="text-sm text-[#585858] flex font-medium">
-                                {` ${i + 1}:00 PM`}
-                              </span>
-                            </button>
-                          )
-                        )}
+                        {[
+                          "1:00PM",
+                          "2:00PM",
+                          "3:00PM",
+                          "4:00PM",
+                          "5:00PM",
+                          "6:00PM",
+                        ].map((item, i) => (
+                          <button
+                            key={i}
+                            onClick={() => setSelectedTime(item)}
+                            className={`${
+                              selectedTime === item &&
+                              "bg-[#E8E8F4] border-[#4345AA] border"
+                            } rounded-lg p-2 mb-2 shadow-md  items-center gap-1 `}
+                          >
+                            <span className="text-sm text-[#585858] flex font-medium">
+                              {item}
+                            </span>
+                          </button>
+                        ))}
                       </div>
                     </div>
                     <button
@@ -207,14 +293,14 @@ export default function Page() {
               </section>
             </div>
             {/* seller details */}
-            <section className="bg-white w-full px-20 py-10 mt-5">
+            <section className="bg-white w-full md:px-20 px-4 py-10 mt-5">
               <header className="mb-7">
                 <h5 className="font-medium text-lg">About seller</h5>
               </header>
-              <section className="flex items-center gap-10 ">
+              <section className="flex flex-col md:flex-row items-center gap-10 ">
                 {/* left */}
-                <div className="flex flex-col w-1/2 gap-10  items-center border-r border-[#EAE6E9] pr-5">
-                  <div className="flex items-center gap-10">
+                <div className="flex flex-col w-full md:w-1/2 gap-10  items-center border-b md:border-b-0 md:border-r pb-4 md:pb-0 border-[#EAE6E9] md:pr-5">
+                  <div className="flex flex-col md:flex-row items-center gap-10">
                     <Image
                       src="/profilePic.png"
                       width={100}
@@ -251,14 +337,17 @@ export default function Page() {
                       </div>
                     </div>
                   </div>
-                  <button onClick={()=> setContactModal(true)} className="w-full py-2 hover:bg-orange rounded-xl bg-inherit border border-orange hover:text-white text-orange">
+                  <button
+                    onClick={() => setContactModal(true)}
+                    className="w-full py-2 hover:bg-orange rounded-xl bg-inherit border border-orange hover:text-white text-orange"
+                  >
                     Contact
                   </button>
                 </div>
 
                 {/* right */}
 
-                <div className=" w-full space-y-5 md:w-1/2 ">
+                <div className=" w-full flex flex-col items-center space-y-5 md:w-1/2 ">
                   <Image
                     width={200}
                     height={200}
@@ -281,7 +370,7 @@ export default function Page() {
                         className="flex justify-between gap-2 items-center"
                       >
                         <p className="text-[#585858] w-[200px]">{item}</p>
-                        <div className="w-[200px]">
+                        <div className="md:w-[200px] w-[70px]">
                           <ProgressUI
                             rangeColor="#141695"
                             wholeColor="#E4E7EC"

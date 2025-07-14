@@ -1,13 +1,25 @@
 "use client";
 
+import { UpdateProfile } from "@/app/api/services/auth.service";
 import { Add } from "iconsax-react";
+import { useState } from "react";
 
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSubmit: (data: UpdateProfile) => void;
 }
 
-export const EditProfileModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
+export const EditProfileModal: React.FC<ModalProps> = ({
+  isOpen,
+  onClose,
+  onSubmit,
+}) => {
+  const [formData, setFormData] = useState<UpdateProfile>({
+    full_name: "",
+    email: "",
+    phone_no: "",
+  });
   if (!isOpen) return null;
 
   const handleBackgroundClick = (
@@ -16,6 +28,24 @@ export const EditProfileModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
     if (e.target === e.currentTarget) {
       onClose();
     }
+  };
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    // Handle form submission logic here
+
+    console.log("Profile updated:");
+    onSubmit(formData);
+    onClose();
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Handle input change logic here
+    setFormData({
+      ...formData,
+      [e.target.id]: e.target.value,
+    });
+    console.log("Input changed:", e.target.value);
   };
 
   return (
@@ -36,70 +66,79 @@ export const EditProfileModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
             <Add size={32} className="rotate-45" />
           </button>
         </header>
-        <section className="grid grid-cols-2 gap-x-4 gap-y-4">
-          <div className="space-y-1.5">
-            <label htmlFor="firstName" className="text-gray-800 font-medium">
-              First Name
-            </label>
-            <input
-              type="text"
-              id="firstName"
-              placeholder="First Name"
-              value="Rosemary"
-              className="w-full px-4 text-sm py-2.5 border border-[#B5ABB3] rounded-lg focus:outline-none focus:ring-2 focus:ring-orange"
-            />
+        <form onSubmit={handleSubmit}>
+          <section className="grid grid-cols-2 gap-x-4 gap-y-4">
+            <div className="space-y-1.5">
+              <label htmlFor="firstName" className="text-gray-800 font-medium">
+                Full Name
+              </label>
+              <input
+                type="text"
+                id="full_name"
+                placeholder="First Name"
+                value={formData.full_name}
+                onChange={handleChange}
+                className="w-full px-4 text-sm py-2.5 border border-[#B5ABB3] rounded-lg focus:outline-none focus:ring-2 focus:ring-orange"
+              />
+            </div>
+            {/* <div className="space-y-1.5">
+              <label htmlFor="lastName" className="text-gray-800 font-medium">
+                Last Name
+              </label>
+              <input
+                type="text"
+                id="lastName"
+                placeholder="Last Name"
+                value={formData.lastName}
+                onChange={handleChange}
+                className="w-full px-4 text-sm py-2.5 border border-[#B5ABB3] rounded-lg focus:outline-none focus:ring-2 focus:ring-orange"
+              />
+            </div> */}
+            <div className="space-y-1.5">
+              <label htmlFor="email" className="text-gray-800 font-medium">
+                Email
+              </label>
+              <input
+                type="email"
+                id="email"
+                placeholder="Email"
+                value={formData.email}
+                onChange={handleChange}
+                className="w-full px-4 text-sm py-2.5 border border-[#B5ABB3] rounded-lg focus:outline-none focus:ring-2 focus:ring-orange"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label htmlFor="phone_no" className="text-gray-800 font-medium">
+                Phone_no
+              </label>
+              <input
+                type="text"
+                id="phone_no"
+                placeholder="Phone"
+                value={formData.phone_no}
+                onChange={handleChange}
+                className="w-full px-4 text-sm py-2.5 border border-[#B5ABB3] rounded-lg focus:outline-none focus:ring-2 focus:ring-orange"
+              />
+            </div>
+          </section>
+          <div className="flex items-center gap-3 ml-auto w-fit">
+            <button
+              onClick={onClose}
+              className="px-10 py-2.5 rounded-lg border-orange text-orange border focus:outline-none"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={
+                !formData.full_name || !formData.email || !formData.phone_no
+              }
+              className="px-10 py-2.5 rounded-lg border-orange bg-orange text-white border focus:outline-none"
+            >
+              Update
+            </button>
           </div>
-          <div className="space-y-1.5">
-            <label htmlFor="lastName" className="text-gray-800 font-medium">
-              Last Name
-            </label>
-            <input
-              type="text"
-              id="lastName"
-              placeholder="Last Name"
-              value="Sunday"
-              className="w-full px-4 text-sm py-2.5 border border-[#B5ABB3] rounded-lg focus:outline-none focus:ring-2 focus:ring-orange"
-            />
-          </div>
-          <div className="space-y-1.5">
-            <label htmlFor="email" className="text-gray-800 font-medium">
-              Email
-            </label>
-            <input
-              type="email"
-              id="email"
-              placeholder="Email"
-              value="rosiesunday20.j@gmail.com"
-              className="w-full px-4 text-sm py-2.5 border border-[#B5ABB3] rounded-lg focus:outline-none focus:ring-2 focus:ring-orange"
-            />
-          </div>
-          <div className="space-y-1.5">
-            <label htmlFor="phone" className="text-gray-800 font-medium">
-              Phone
-            </label>
-            <input
-              type="text"
-              id="phone"
-              placeholder="Phone"
-              value="07056440321"
-              className="w-full px-4 text-sm py-2.5 border border-[#B5ABB3] rounded-lg focus:outline-none focus:ring-2 focus:ring-orange"
-            />
-          </div>
-        </section>
-        <div className="flex items-center gap-3 ml-auto w-fit">
-          <button
-            onClick={onClose}
-            className="px-10 py-2.5 rounded-lg border-orange text-orange border focus:outline-none"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={onClose}
-            className="px-10 py-2.5 rounded-lg border-orange bg-orange text-white border focus:outline-none"
-          >
-            Update
-          </button>
-        </div>
+        </form>
       </div>
     </div>
   );

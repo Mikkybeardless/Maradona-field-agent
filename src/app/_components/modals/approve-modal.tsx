@@ -1,13 +1,20 @@
 "use client";
 
 import { Add } from "iconsax-react";
+import { useState } from "react";
 
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onApprove: (notes: string) => void;
 }
 
-export const ApproveModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
+export const ApproveModal: React.FC<ModalProps> = ({
+  isOpen,
+  onClose,
+  onApprove,
+}) => {
+  const [notes, setNotes] = useState("");
   if (!isOpen) return null;
 
   const handleBackgroundClick = (
@@ -23,7 +30,7 @@ export const ApproveModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
       onClick={handleBackgroundClick}
       className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50"
     >
-      <div className="bg-white space-y-11 p-6 rounded-lg shadow-lg w-[500px] max-w-[700px]">
+      <div className="bg-white space-y-11 p-6 rounded-lg shadow-lg w-full max-w-[600px]">
         <header className="w-full flex items-center justify-between p-3 border-b border-[#EAE6E9]">
           <h5 className="text-3xl text-[#1F0E1C] font-semibold">
             Approve Property
@@ -39,8 +46,9 @@ export const ApproveModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
         <section className="grid grid-cols-1  gap-y-4">
           <div className="border-l-2 border-orange p-4 mb-4 bg-[#FFFAEB]">
             <p>
-              "Approving this property means you've verified all necessary
-              details during inspection. This action cannot be undone."
+              &qout;Approving this property means you&apos;ve verified all
+              necessary details during inspection. This action cannot be
+              undone.&qout;
             </p>
           </div>
           <div className="space-y-1.5">
@@ -52,20 +60,22 @@ export const ApproveModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
               placeholder="Enter final message"
               name="comment"
               id="comment"
-              rows={3}
-            ></textarea>
+              rows={6}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+            />
           </div>
         </section>
-        <div className="flex items-center gap-3 ml-auto w-fit">
+        <div className="flex items-center gap-6  w-full justify-between">
           <button
-            onClick={onClose}
-            className="px-10 py-2.5 rounded-lg border-orange bg-orange text-white border focus:outline-none"
+            onClick={() => onApprove(notes)}
+            className="px-10 py-2 w-full rounded-xl border-orange bg-orange text-white border focus:outline-none"
           >
             Yes, I approve
           </button>
           <button
             onClick={onClose}
-            className="px-10 py-2.5 rounded-lg border-orange text-orange border focus:outline-none"
+            className="px-10 py-2 w-full rounded-xl border-orange text-orange border focus:outline-none"
           >
             Cancel
           </button>

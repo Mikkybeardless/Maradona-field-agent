@@ -9,6 +9,12 @@ const LineChartComponent = dynamic(
   }
 );
 
+type LineChartData = {
+  xAxis: string;
+  year: string;
+  inspections: number;
+};
+
 import { DateSelect } from "@/app/_components/common/dateSelect";
 import { generateRandomNumber } from "@/app/helper/helperFunction";
 import { GoDotFill } from "react-icons/go";
@@ -29,8 +35,8 @@ export default function Page() {
       "8PM",
       "12AM",
     ];
-    let randomYear = generateRandomNumber(2023, 2020);
-    const lineChartData: any = [];
+    const randomYear = generateRandomNumber(2023, 2020);
+    const lineChartData: LineChartData[] = [];
     data.forEach((time) => {
       lineChartData.push({
         xAxis: time,
@@ -56,7 +62,6 @@ export default function Page() {
       { name: "House", value: 400 },
       { name: "Car", value: 300 },
       { name: "Land", value: 200 },
-      { name: "Bike", value: 150 },
       { name: "Others", value: 650 },
     ],
     colors: ["#2E90FA", "#F670C7", "#EF6820", "#7A5AF8", "#DED9DD"],
@@ -70,18 +75,18 @@ export default function Page() {
           Analytics Overview
         </h5>
         <div className="w-full px-5 py-7 bg-white rounded-xl">
-          <div className="w-full  flex items-center justify-evenly *:px-12">
-            <div className="space-y-3  border-r border-light-grey">
+          <div className="w-full flex-col md:flex-row  flex md:items-center  justify-evenly *:px-12 *:py-4">
+            <div className="space-y-3 border-b md:border-b-0 md:border-r border-light-grey">
               <h6 className="text-sm text-[#585858]">
                 Total Inspections Completed
               </h6>
               <p className="text-lg font-bold">230</p>
             </div>
-            <div className="space-y-3  border-r border-light-grey">
+            <div className="space-y-3 border-b md:border-b-0 md:border-r border-light-grey">
               <h6 className="text-sm text-[#585858]">Pending Inspections</h6>
               <p className="text-lg font-bold">53</p>
             </div>
-            <div className="space-y-3  border-r border-light-grey">
+            <div className="space-y-3  border-b md:border-b-0 md:border-r border-light-grey">
               <h6 className="text-sm text-[#585858]">Upcoming Inspections</h6>
               <p className="text-lg font-bold">530</p>
             </div>
@@ -94,7 +99,7 @@ export default function Page() {
       </section>
 
       <section className="px-6 py-4">
-        <h5 className="text-xl font-semibold">Commission Earnings</h5>
+        <h5 className="md;text-xl font-semibold">Commission Earnings</h5>
         <div className="flex justify-end">
           <div className="flex items-center gap-x-5">
             <span className="flex items-center gap-x-1 text-sm text-[#585858]">
@@ -115,7 +120,7 @@ export default function Page() {
 
         {/* Bar chart */}
         <div className="flex">
-          <div className="flex items-center justify-center w-10">
+          <div className="flex items-center justify-center w-1 md:w-10">
             <p className="text-lg whitespace-nowrap -rotate-90 origin-center">
               Earnings <span>(₦)</span>
             </p>
@@ -133,9 +138,9 @@ export default function Page() {
       <section className="flex flex-col gap-10 px-5 w-full md:flex-row">
         {/* left */}
         <div className="flex flex-col gap-5 w-full md:w-1/2">
-          <div className="flex justify-between pr-4">
-            <h5 className="text-xl font-semibold">Inspection Status</h5>{" "}
-            <div className="border border-gray-200 px-4 py-2 rounded-lg">
+          <div className="flex justify-between pr-3 md:pr-4">
+            <h5 className="md:text-xl font-semibold">Inspection Status</h5>{" "}
+            <div className="border border-gray-200 px-3 md:px-4 md:py-2 py-1 rounded-lg">
               <select name="" id="">
                 {[
                   "January",
@@ -175,9 +180,11 @@ export default function Page() {
 
         {/* right */}
         <div className="flex flex-col gap-5 w-full md:w-1/2">
-          <div className="flex justify-between pr-7">
-            <h5 className="text-xl font-semibold">Most Property Inspected</h5>{" "}
-            <div className="border border-gray-200 px-4 py-2 rounded-lg">
+          <div className="flex justify-between pr-3 md:pr-7">
+            <h5 className="md:text-xl font-semibold">
+              Most Property Inspected
+            </h5>{" "}
+            <div className="border border-gray-200 px-3 py-1 md:px-4 md:py-2 rounded-lg">
               <select name="" id="">
                 {[
                   "January",
@@ -217,19 +224,19 @@ export default function Page() {
 
       <section className="px-6 py-4">
         <div className="flex justify-between">
-          <h5 className="text-xl font-semibold">Scheduled Times</h5>{" "}
-          <DateSelect value={null} />
+          <h5 className="md:text-xl font-semibold">Scheduled Times</h5>
+          <div className="flex gap-3">
+            <span className="hidden md:flex items-center gap-x-1 text-sm text-[#585858]">
+              <GoDotFill className="text-[#F79009]" />
+              Schedule
+            </span>
+            <DateSelect onChange={() => {}} value={null} />
+          </div>
         </div>
 
-        <div className="flex justify-end">
-          <span className="flex items-center gap-x-1 text-sm text-[#585858]">
-            <GoDotFill className="text-[#F79009]" />
-            Schedule
-          </span>
-        </div>
         <div className="flex">
-          <div className="flex items-center justify-center w-10">
-            <p className="text-lg whitespace-nowrap -rotate-90 origin-center">
+          <div className="flex items-center justify-center w-3 md:w-10">
+            <p className="md:text-lg whitespace-nowrap -rotate-90 origin-center">
               No of Inspections
             </p>
           </div>

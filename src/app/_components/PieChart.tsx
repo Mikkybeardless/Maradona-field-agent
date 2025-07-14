@@ -1,7 +1,6 @@
 import React from "react";
 import { BiSolidLandscape } from "react-icons/bi";
 import { FaCar, FaHouse } from "react-icons/fa6";
-import { MdPedalBike } from "react-icons/md";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 
 type Data = {
@@ -86,6 +85,7 @@ export const ReusablePieChart = ({
     return null;
   };
 
+  // const { isMobile } = useWindowResizer();
   // Calculate total for percentage
   const total = data.reduce((sum, entry) => sum + entry.value, 0);
   const dataWithTotal = data.map((entry) => ({ ...entry, total }));
@@ -142,16 +142,14 @@ export const ReusablePieChart = ({
                 <FaHouse />
               ) : maxItem.name === "Land" ? (
                 <BiSolidLandscape />
-              ) : (
-                <MdPedalBike />
-              )}
-              ({maxItem.value})
+              ) : null}
+              {maxItem.value})
             </span>
             {/* max entry name */}
           </p>
         )}
         {showLegend && (
-          <div className="absolute top-0 right-20">
+          <div className="absolute top-[35%] right-0  md:right-20">
             <div className="flex flex-col gap-2">
               {dataWithTotal.map((entry, index) => (
                 <div key={index} className="flex items-center gap-2">

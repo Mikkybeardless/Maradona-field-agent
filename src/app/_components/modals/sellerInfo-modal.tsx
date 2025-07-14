@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import LogoutIcon from "@/app/_assets/icons/log-out.svg"; // Adjust the path as necessary
+// import LogoutIcon from "@/app/_assets/icons/log-out.svg";
 import { FaPhoneAlt, FaStar, FaTimes } from "react-icons/fa";
 import { MdEmail, MdMyLocation } from "react-icons/md";
 import { LuHouse } from "react-icons/lu";
@@ -31,7 +31,7 @@ export const SellerInfoModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
       onClick={handleBackgroundClick}
       className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50"
     >
-      <div className="bg-white space-y-3 px-6 py-4 rounded-lg shadow-lg w-[500px] flex flex-col max-w-[50%]">
+      <div className="bg-white space-y-3 px-6 py-4 rounded-lg shadow-lg w-full flex flex-col max-w-[700px]">
         <div className="mt-2 flex items-center justify-between gap-x-3 border-b pb-1 ">
           <h2 className="text-2xl font-semibold">Seller Info</h2>
           <button
@@ -42,7 +42,12 @@ export const SellerInfoModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
           </button>
         </div>
         <div className="grid items-center grid-cols-3 gap-3">
-            <div>          <span className="bg-[#F2F4F7] rounded-full p-5 text-2xl font-bold text-gray-500">SE</span></div>
+          <div>
+            {" "}
+            <span className="bg-[#F2F4F7] rounded-full p-5 text-2xl font-bold text-gray-500">
+              SE
+            </span>
+          </div>
 
           <div className="">
             <h4 className="font-normal text-lg">Stephen Etta</h4>
@@ -94,14 +99,20 @@ export const SellerInfoModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
             </div>
           </div>
         </div>
-        <span className="flex gap-3 items-center text-[#585858]"> <AiFillMessage  />From sller</span>
-        <span className="text-[#040421] font-medium">Call me 1hr before arriving</span>
+        <span className="flex gap-3 items-center text-[#585858]">
+          {" "}
+          <AiFillMessage />
+          From sller
+        </span>
+        <span className="text-[#040421] font-medium">
+          Call me 1hr before arriving
+        </span>
         <div className="flex justify-center">
           <button
             onClick={onClose}
             className="text-orange hover:bg-inherit flex gap-2 items-center justify-center w-full border-orange hover:text-white hover:bg-orange border rounded-xl py-2 px-4 md:px-10 "
           >
-         <MdMyLocation />   Get directions
+            <MdMyLocation /> Get directions
           </button>
         </div>
       </div>

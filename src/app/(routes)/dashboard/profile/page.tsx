@@ -3,13 +3,16 @@
 import { EditPasswordModal } from "@/app/_components/modals/change-password-modal";
 import { EditProfileModal } from "@/app/_components/modals/edit-profile-modal";
 import { EditPaymentModal } from "@/app/_components/modals/payment-modal";
-import { ArrowRight2, Camera, Copy, Edit2 } from "iconsax-react";
+import authService, { UpdateProfile } from "@/app/api/services/auth.service";
+import { ArrowRight2, Camera, Copy } from "iconsax-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { BsToggleOff, BsToggleOn } from "react-icons/bs";
+import { FaPen } from "react-icons/fa";
 import { GoDotFill } from "react-icons/go";
 import { IoMdMan } from "react-icons/io";
+import { RiEdit2Fill } from "react-icons/ri";
 
 export default function Page() {
   const [isEditing, setIsEditing] = useState<boolean>(false);
@@ -17,12 +20,27 @@ export default function Page() {
   const [isPaymentModal, setPaymentModal] = useState(false);
   const [isActive, setIsActive] = useState<boolean>(true);
 
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const userProfile = await authService.getProfile();
+      console.log("User Profile: ", userProfile);
+    };
+
+    fetchProfile();
+  }, []);
+
+  const updateProfile = (data: UpdateProfile) => {
+    // const res = authService.updateProfile(data);
+    console.log("Profile Updated: ", data);
+  };
+
   return (
     <>
       <section className="mt-11 flex flex-col mb-10 md:w-2/5 mx-auto">
         {/* Modals */}
         <EditProfileModal
           isOpen={isEditing}
+          onSubmit={updateProfile}
           onClose={() => setIsEditing(false)}
         />
         <EditPasswordModal
@@ -64,7 +82,9 @@ export default function Page() {
             <div className="w-fit text-center mx-auto mt-4">
               <h2 className="text-xl font-semibold">Rosemary Sunday</h2>
               <div className="text-center text-gray-600 flex items-center gap-2">
-                <p className="text-sm">rosiesunday20.aj@gmail.com</p>
+                <p className="text-sm text-[#150A13]">
+                  rosiesunday20.aj@gmail.com
+                </p>
                 <Copy size={16} color="#ACA0A9" />
               </div>
             </div>
@@ -81,7 +101,7 @@ export default function Page() {
                 onClick={() => setIsEditing(true)}
                 className="flex justify-center text-orange border-orange border gap-2  py-2 px-4 rounded-lg"
               >
-                <Edit2 size={24} />
+                <FaPen size={24} />
                 Edit profile
               </button>
             </div>
@@ -94,87 +114,96 @@ export default function Page() {
                   Basic Info
                 </h5>
               </header>
-              <section className="p-5 grid grid-cols-2 gap-4 text-sm">
-                <h6 className="text-[#5C4D58]">Staff ID:</h6>
-                <p className="text-[#150A13]">DS12000000</p>
-                <h6 className="text-[#5C4D58]">Phone:</h6>
-                <div className="flex items-center gap-2">
-                  <p className="text-[#150A13]">07056440321</p>
-                  <Copy size={16} color="#ACA0A9" />
+              <section className="p-5 text-sm">
+                <div className="flex items-center gap-2  justify-between mb-3">
+                  <h6 className="text-[#5C4D58]">Staff ID:</h6>
+                  <p className="text-[#150A13]">DS12000000</p>
                 </div>
-                <h6 className="text-[#5C4D58]">Address:</h6>
-                <p className="text-[#150A13]">Lagos, Nigeria</p>
-                <h6 className="text-[#5C4D58]">Phone Number:</h6>
-                <p className="text-[#150A13]">0123456789</p>
+
+                <div className="flex items-center gap-2  justify-between mb-3">
+                  {" "}
+                  <h6 className="text-[#5C4D58]">Phone:</h6>
+                  <div className="flex items-center gap-2">
+                    <p className="text-[#150A13]">07056440321</p>
+                    <Copy size={16} color="#ACA0A9" />
+                  </div>
+                </div>
+                <div className="flex items-center gap-2  justify-between mb-3">
+                  <h6 className="text-[#5C4D58]">Address:</h6>
+                  <p className="text-[#150A13]">Lagos, Nigeria</p>
+                </div>
+
+                <div className="flex items-center gap-2  justify-between mb-3">
+                  <h6 className="text-[#5C4D58]">Staff Type:</h6>
+                  <p className="text-[#150A13] flex items-center gap-1">
+                    <IoMdMan size={15} />
+                    Field Agent
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2  justify-between mb-3">
+                  <h6 className="text-[#5C4D58]">Availability:</h6>
+                  <p className="text-[#150A13] flex items-center gap-1">
+                    <GoDotFill
+                      className={`${
+                        isActive ? "text-green-500" : "text-yellow-500"
+                      }`}
+                    />
+                    {isActive ? "Active" : "Away"}
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2  justify-between mb-3">
+                  <h6 className="text-[#5C4D58]">Active</h6>
+                  <button
+                    className="text-[40px]"
+                    onClick={() => setIsActive((prev) => !prev)}
+                    type="button"
+                  >
+                    {isActive ? (
+                      <BsToggleOn className="text-[#FD6100]" size={30} />
+                    ) : (
+                      <BsToggleOff size={30} />
+                    )}
+                  </button>
+                </div>
               </section>
             </div>
-            <div className="bg-white border border-[#EAE6E9] rounded-lg">
-              <header className="px-5 py-3 border-b border-[#EAE6E9">
-                <h5 className="text-xl text-[#150A13] font-medium">Role</h5>
-              </header>
-              <section className="p-5 grid grid-cols-2 gap-4 text-sm">
-                <h6 className="text-[#5C4D58]">User Type:</h6>
-                <p className="text-[#150A13]">Agent</p>
-                <h6 className="text-[#5C4D58]">Staff Type:</h6>
-                <p className="text-[#150A13] flex items-center gap-1">
-                  <IoMdMan size={15} />
-                  Field Agent
-                </p>
-                <h6 className="text-[#5C4D58]">Availability:</h6>
-                <p className="text-[#150A13] flex items-center gap-1">
-                  <GoDotFill
-                    className={`${
-                      isActive ? "text-green-500" : "text-yellow-500"
-                    }`}
-                  />
-                  {isActive ? "Active" : "Away"}
-                </p>
-                <h6 className="text-[#5C4D58]">Active</h6>
-                <button
-                  className="text-[40px]"
-                  onClick={() => setIsActive((prev) => !prev)}
+
+            <div className="bg-white  p-4 border border-[#EAE6E9] rounded-lg">
+              <div className="flex justify-between items-center mb-3">
+                <h5 className="text-xl text-[#150A13] font-medium">
+                  Payment Info
+                </h5>{" "}
+                {/* <button
+                  onClick={() => setPaymentModal(true)}
                   type="button"
+                  className="flex justify-center text-orange border-orange border gap-2  py-1 px-4 rounded-lg"
                 >
-                  {isActive ? (
-                    <BsToggleOff size={30} />
-                  ) : (
-                    <BsToggleOn size={30} />
-                  )}
+                  Add Payment
+                </button> */}
+                <button>
+                  {" "}
+                  <RiEdit2Fill size={30} />
                 </button>
-              </section>
-            </div>
-            <div className="bg-white flex justify-between p-4 border border-[#EAE6E9] rounded-lg">
-              <h5 className="text-xl text-[#150A13] font-medium">
-                Payment Info
-              </h5>{" "}
-              <button
-                onClick={() => setPaymentModal(true)}
-                type="button"
-                className="flex justify-center text-orange border-orange border gap-2  py-1 px-4 rounded-lg"
-              >
-                Add Payment
-              </button>
+              </div>
+
+              <div className="flex items-center gap-2  justify-between mb-3">
+                <h6 className="text-[#5C4D58]">Bank Name</h6>
+                <p className="text-[#150A13]">First Bank</p>
+              </div>
+              <div className="flex items-center gap-2  justify-between mb-3">
+                <h6 className="text-[#5C4D58]">Account No</h6>
+                <p className="text-[#150A13]">07056440321</p>
+              </div>
             </div>
             <div className="bg-white border border-[#EAE6E9] rounded-lg">
               <header className="px-5 py-3 border-b border-[#EAE6E9">
                 <h5 className="text-xl text-[#150A13] font-medium">Password</h5>
               </header>
               <section className="p-5 text-sm">
-                <div className="flex w-full items-end gap-4">
-                  <div className="space-y-2 flex-grow">
-                    <label
-                      htmlFor="password"
-                      className="text-gray-800 text-sm font-medium"
-                    >
-                      Password
-                    </label>
-                    <input
-                      type="password"
-                      id="password"
-                      placeholder="********"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange"
-                    />
-                  </div>
+                <div className="flex w-full items-center justify-between gap-4">
+                  <p>***********</p>
                   <button
                     onClick={() => setIsChangingPassword(true)}
                     type="button"

@@ -1,9 +1,10 @@
 import { Paper } from "@mui/material";
 import { DataGrid, GridColDef, GridRowParams } from "@mui/x-data-grid";
 
-type TableComponentProps = {
+/* eslint-disable @typescript-eslint/no-unused-vars */
+type TableComponentProps<T> = {
   columns: GridColDef[];
-  rows: any[];
+  rows: T[];
   paginationActive: boolean;
   pageSize: number;
   rowHeight?: number;
@@ -15,7 +16,7 @@ type TableComponentProps = {
   onRowClick?: (params: GridRowParams) => void;
 };
 
-export default function MuiTableComponent({
+export default function MuiTableComponent<T>({
   columns,
   rows,
   paginationActive,
@@ -24,7 +25,7 @@ export default function MuiTableComponent({
   showCheckbox,
   headerStyle,
   onRowClick,
-}: TableComponentProps) {
+}: TableComponentProps<T>) {
   const paginationModel = { page: 0, pageSize };
   // Handle row click
   const handleRowClick = (params: GridRowParams) => {
@@ -56,6 +57,11 @@ export default function MuiTableComponent({
           },
           "& .MuiDataGrid-columnHeaderTitle": {
             fontWeight: headerStyle?.fontWeight ?? "normal",
+            textAlign: "center",
+            width: "100%",
+          },
+          "& .MuiDataGrid-columnHeader": {
+            justifyContent: "center",
           },
           "& .MuiDataGrid-row": {
             cursor: `${onRowClick && "pointer"}`, // Always show pointer cursor on rows

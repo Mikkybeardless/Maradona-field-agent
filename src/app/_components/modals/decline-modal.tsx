@@ -1,15 +1,21 @@
 "use client";
 
 import { Add } from "iconsax-react";
-import Image from "next/image";
-import warningImage from "@/app/_assets/icons/warn.svg"; // Adjust the path as necessary
+import { AnimatedCirclesImage } from "../common/animatedWarning";
+import { useState } from "react";
 
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onDecline: (reason: string) => void;
 }
 
-export const DeclineModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
+export const DeclineModal: React.FC<ModalProps> = ({
+  isOpen,
+  onClose,
+  onDecline,
+}) => {
+  const [reason, setReason] = useState("");
   if (!isOpen) return null;
 
   const handleBackgroundClick = (
@@ -25,7 +31,7 @@ export const DeclineModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
       onClick={handleBackgroundClick}
       className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50"
     >
-      <div className="bg-white space-y-11 p-6 rounded-lg shadow-lg w-[500px] max-w-[700px]">
+      <div className="bg-white space-y-11 p-6 rounded-lg shadow-lg w-full max-w-[600px]">
         <header className="w-full flex items-center justify-between p-3 border-b border-[#EAE6E9]">
           <h5 className="text-3xl text-[#1F0E1C] font-semibold">
             Decline Property
@@ -39,14 +45,11 @@ export const DeclineModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
           </button>
         </header>
         <section className="grid grid-cols-1  gap-y-4">
-          <div className="flex flex-col gap-4 items-center justify-center mb-4 p-4 bg-[#FFFAEB] ">
-            <Image
-              src={warningImage}
-              width={50}
-              height={50}
-              alt="warning image"
-            />
-            <p>Are you sure you want to decline this property for sale?</p>
+          <div className="flex flex-col gap-4 items-center justify-center mb-4 p-4 ">
+            <AnimatedCirclesImage />
+            <p className="text-[#040421] font-semibold">
+              Are you sure you want to decline this property for sale?
+            </p>
           </div>
           <div className="space-y-1.5">
             <label htmlFor="comment" className="text-gray-800 font-medium">
@@ -57,20 +60,22 @@ export const DeclineModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
               placeholder="Write reason for decline"
               name="comment"
               id="comment"
-              rows={3}
-            ></textarea>
+              rows={6}
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+            />
           </div>
         </section>
-        <div className="flex items-center gap-3 ml-auto w-fit">
+        <div className="flex items-center justify-between gap-6  w-full">
           <button
-            onClick={onClose}
-            className="px-10 py-2.5 rounded-lg border-orange bg-orange text-white border focus:outline-none"
+            onClick={() => onDecline(reason)}
+            className="px-10 w-full py-2 rounded-xl border-orange bg-orange text-white border focus:outline-none"
           >
             Decline
           </button>
           <button
             onClick={onClose}
-            className="px-10 py-2.5 rounded-lg border-orange text-orange border focus:outline-none"
+            className="px-10 w-full py-2 rounded-xl border-orange text-orange border focus:outline-none"
           >
             Cancel
           </button>

@@ -1,7 +1,11 @@
+"use client";
+
+import { useWindowResizer } from "@/app/hooks/useWindowResize";
 import Image from "next/image";
-import { FaPhoneAlt, FaTimes } from "react-icons/fa";
+import { FaPhoneAlt } from "react-icons/fa";
 import { FaLocationDot } from "react-icons/fa6";
 import { GoDotFill } from "react-icons/go";
+import Link from "next/link";
 
 interface InspectionCardProps {
   inspection: {
@@ -18,26 +22,31 @@ interface InspectionCardProps {
 }
 
 export function InspectionCard({ inspection }: InspectionCardProps) {
+  const { isMobile } = useWindowResizer();
   return (
     <div className="w-full space-y-3 border-b border-gray-300  p-4">
       <div className="flex justify-between">
         <h4>Upcoming Inspection</h4>{" "}
         <span className="text-gray-400 text-xs">{inspection.timestamp}</span>
       </div>
-      <div className="flex gap-14 items-center ">
+      <div className="flex gap-4 md:gap-14 items-center ">
         <Image
           src={inspection.imgsrc}
           alt="notification image"
-          width={50}
-          height={50}
+          width={isMobile ? 64 : 100}
+          height={isMobile ? 64 : 100}
           className="object-contain"
         />
         <div className="flex gap-2 mr-auto flex-col">
-          <p className="text-xl flex items-center gap-2 font-semibold">
-            {inspection.des} <span className="text-gray-400">posted by</span>{" "}
-            {inspection.postedBy}{" "}
+          <p className="md:text-xl flex flex-col md:flex-row items-center gap-2 font-semibold">
+            <span className="w-[150px] truncate">{inspection.des}</span>{" "}
+            <span>
+              {" "}
+              <span className="text-gray-400">posted by</span>{" "}
+              {inspection.postedBy}
+            </span>
           </p>
-          <div className="flex items-center gap-5">
+          <div className="flex flex-col md:flex-row md:items-center gap-3  md:gap-5">
             <span className="flex items-center gap-1 text-sm font-medium text-gray-600">
               <FaPhoneAlt className="text-[#FD8133]" />{" "}
               <span>{inspection.phone}</span>
@@ -48,19 +57,22 @@ export function InspectionCard({ inspection }: InspectionCardProps) {
             </span>
           </div>
 
-          <div className="flex items-center gap-5">
+          <div className="flex items-center  md:gap-5">
             <span className="text-sm text-gray-500">{inspection.date}</span>
             <GoDotFill className="text-gray-500" />
             <span className="text-sm text-gray-500">{inspection.time}</span>
-            <button className="underline">Reshedule</button>
+            <button className="underline md:block hidden">Reshedule</button>
           </div>
         </div>
-
-        <button
-          className={`border  border-orange text-orange px-4 py-2 rounded-lg hover:bg-orange-100`}
-        >
-          view details
-        </button>
+        <div className="flex flex-col items-center gap-2">
+          <Link
+            href={`/dashboard/inspection-details`}
+            className={`border  border-orange text-orange text-xs flex md:text-base px-3 py-1 md:px-4 md:py-2 rounded-lg hover:bg-orange-100`}
+          >
+            view details
+          </Link>
+          <button className="underline  md:hidden">Reshedule</button>
+        </div>
       </div>
     </div>
   );

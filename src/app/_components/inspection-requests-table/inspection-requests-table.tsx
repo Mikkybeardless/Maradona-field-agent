@@ -9,10 +9,16 @@ import { GoDotFill } from "react-icons/go";
 import { useClickAway } from "react-use";
 import { Popper } from "@mui/material";
 import { BsThreeDotsVertical } from "react-icons/bs";
+import { useRouter } from "next/navigation";
 
-export const InspectionRequestsTable = () => {
+interface InspectionRequest<T> {
+  rows: T[];
+}
+
+export const InspectionRequestsTable = <T,>({ rows }: InspectionRequest<T>) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const dotsPopupRef = useRef(null);
+  const router = useRouter();
 
   const open = Boolean(anchorEl);
   const id = open ? "simple-popper" : undefined;
@@ -25,24 +31,6 @@ export const InspectionRequestsTable = () => {
     event.preventDefault();
     event.stopPropagation(); // Prevents bubbling
     setAnchorEl(anchorEl ? null : event.currentTarget);
-  };
-  const rows = () => {
-    const data = Array.from({ length: 100 }, (_, i) => ({
-      id: i + 1,
-      requestId: `Request ID ${i + 1}`,
-      itemName: `Item Name ${i + 1}`,
-      category: i % 2 === 0 ? "Land" : "Vehicle",
-      date: `Date ${i + 1}`,
-      status:
-        i < 5
-          ? "Approved"
-          : i < 10 && i > 5
-          ? "Pending"
-          : i < 15 && i > 10
-          ? "Active"
-          : "Scheduled",
-    }));
-    return data;
   };
 
   const columns: GridColDef[] = [
@@ -65,24 +53,24 @@ export const InspectionRequestsTable = () => {
     {
       field: "status",
       headerName: "Status",
-      flex: 0.9,
+      flex: 0.7,
       renderCell: ({ value }) => {
         return (
           <span
-            className={`flex gap-x-1 items-center w-1/2 p-2 rounded-full font-medium text-sm
+            className={`flex gap-x-1 items-center justify-start w-1/2 px-2 py-1 rounded-full font-medium text-sm
 			  ${getStatusClass(value)}`}
           >
-            <GoDotFill /> {value}
+            <GoDotFill size={20} /> {value}
           </span>
         );
       },
     },
     {
       field: "Action",
-      flex: 0.9,
-      renderCell: ({ row }) => {
+      flex: 0.5,
+      renderCell: () => {
         return (
-          <div className="h-full w-full relative z-10 flex justify-center items-center overflow-visible">
+          <div className="h-full w-full relative z-10 flex justify-start items-center overflow-visible">
             <button
               aria-describedby={id}
               type="button"
@@ -100,21 +88,19 @@ export const InspectionRequestsTable = () => {
               anchorEl={anchorEl}
             >
               <Link
-                className="text-xs hover:underline"
+                className="text-xs hover:underline hover:text-blue-600"
                 href={`/dashboard/inspection-details`}
               >
                 View
               </Link>
-             
-              <button className="text-xs hover:underline">
-                  Approve
+
+              <button className="text-xs hover:underline hover:text-green-600">
+                Approve
               </button>
-      
-           
-              <button className="text-xs hover:underline">
-                    Declined
+
+              <button className="text-xs hover:underline hover:text-red-600">
+                Declined
               </button>
-            
             </Popper>
           </div>
         );
@@ -122,6 +108,23 @@ export const InspectionRequestsTable = () => {
     },
   ];
 
+  const mobileColumns: GridColDef[] = [
+    {
+      field: "requestId",
+      headerName: "Request ID",
+      flex: 1,
+    },
+    {
+      field: "itemName",
+      headerName: "Item name",
+      flex: 1,
+    },
+    {
+      field: "category",
+      headerName: "Category",
+      flex: 1,
+    },
+  ];
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
@@ -129,7 +132,7 @@ export const InspectionRequestsTable = () => {
   // Logic for displaying current items
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = rows().slice(indexOfFirstItem, indexOfLastItem);
+  const currentItems = rows.slice(indexOfFirstItem, indexOfLastItem);
 
   // Change page
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
@@ -149,11 +152,11 @@ export const InspectionRequestsTable = () => {
     }
   };
   // Total number of pages
-  const totalPages = Math.ceil(rows().length / itemsPerPage);
+  const totalPages = Math.ceil(rows.length / itemsPerPage);
 
   return (
-    <div className="container mx-auto p-4">
-      <div className="bg-white w-full">
+    <div className="container mx-auto pt-4 md:p-4">
+      <div className="hidden md:block bg-white w-full">
         <MuiTableComponent
           columns={columns}
           rows={currentItems}
@@ -162,12 +165,26 @@ export const InspectionRequestsTable = () => {
           pageSize={itemsPerPage}
         />
       </div>
+
+      {/* Mobile View */}
+      <div className="md:hidden bg-white w-full">
+        <MuiTableComponent
+          columns={mobileColumns}
+          rows={currentItems}
+          showCheckbox
+          onRowClick={() => {
+            router.push("/dashboard/inspection-details");
+          }}
+          paginationActive={false}
+          pageSize={itemsPerPage}
+        />
+      </div>
       {/* Pagination */}
-      <div className="flex justify-between items-center mt-4">
+      <div className="hidden md:flex justify-between items-center mt-4">
         <div className="text-sm text-gray-700">
-          Showing {indexOfFirstItem + 1} - {indexOfLastItem} of {rows().length}
+          Showing {indexOfFirstItem + 1} - {indexOfLastItem} of {rows.length}
         </div>
-        <div className="flex items-center space-x-6">
+        <div className="flex items-center md:space-x-6">
           {/* Previous Button */}
           <button
             onClick={() => paginate(currentPage - 1)}
