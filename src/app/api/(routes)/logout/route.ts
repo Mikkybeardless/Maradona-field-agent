@@ -7,13 +7,10 @@ export async function GET() {
     if (response.status !== 200) {
       throw new Error("Logout failed");
     }
-    return NextResponse.json(
-      { message: "LoginOut successful" },
-      { status: 200 }
-    );
+    return NextResponse.json({ message: "Logout successful" }, { status: 200 });
   } catch (error) {
-    console.error("Login error:", error);
-    return new Response(JSON.stringify({ error: "Login failed" }), {
+    console.error("Logout error:", error);
+    return new Response(JSON.stringify({ error: "Logout failed" }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
     });

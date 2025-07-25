@@ -112,7 +112,7 @@ export const DashboardNav = () => {
           onClose={() => setIsLogoutModal(false)}
         />
         <div className="flex items-center gap-20">
-          <Link href="/dashboard/overview">
+          <Link href="/">
             <Image src={logo} width={85} height={33} alt="logo" className="" />
           </Link>
           <div className="flex items-center gap-5">
