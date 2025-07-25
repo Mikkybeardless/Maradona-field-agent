@@ -56,10 +56,10 @@ export const ExportModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
           </button>
         </header>
 
-        <div className="mt-5 space-y-4">
+        <div className="mt-3 space-y-2">
           <Card Property={property} />
           <Card Property={property} />
-          <Card Property={property} />
+          {/* <Card Property={property} /> */}
         </div>
 
         <div className="flex items-center gap-4 justify-end mt-6">
@@ -126,10 +126,10 @@ const Card: React.FC<CardProps> = ({ Property: property }) => {
           <h5>Product ID</h5>
           <span className="font-semibold text-xl">{property.id}</span>
           <div className="flex items-center gap-1 mt-2">
-            <span className="text-[#175CD3] bg-[#D1E9FF] border-[#175CD3] border rounded-full px-3 py-1 flex items-center gap-1 text-sm font-medium">
+            <span className="text-[#175CD3] bg-[#D1E9FF] text-xs md:text-sm border-[#175CD3] border rounded-full px-3 py-1 flex items-center gap-1 text-sm font-medium">
               <LuHouse /> {property.category}
             </span>
-            <span className="text-[#FD8133] bg-[#FFFAEB] border-[#FD8133] border rounded-full px-3 py-1 flex items-center gap-1 text-sm font-medium">
+            <span className="text-[#FD8133] bg-[#FFFAEB] border-[#FD8133] border rounded-full px-3 py-1 flex items-center gap-1 text-xs md:text-sm font-medium">
               <BsStars /> Brand New
             </span>
           </div>
