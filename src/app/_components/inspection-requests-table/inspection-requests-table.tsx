@@ -1,230 +1,127 @@
 "use client";
 
-import { GridColDef } from "@mui/x-data-grid";
-import { ArrowLeft2, ArrowRight2 } from "iconsax-react";
-import Link from "next/link";
-import { useRef, useState } from "react";
-import MuiTableComponent from "../TableComp";
-import { GoDotFill } from "react-icons/go";
-import { useClickAway } from "react-use";
-import { Popper } from "@mui/material";
-import { BsThreeDotsVertical } from "react-icons/bs";
+import { useEffect, useState } from "react";
+import MuiTableComponent from "../table/TableComp";
 import { useRouter } from "next/navigation";
+import { TableSearchInput } from "./tableSearchInput";
+import { useDebounce } from "@/app/hooks/useDebounce";
+import { inspectionColumns } from "../table/colums";
+import axios from "axios";
+import { StatusSelect } from "../common/statusSelect";
 
-interface InspectionRequest<T> {
-  rows: T[];
-}
-
-export const InspectionRequestsTable = <T,>({ rows }: InspectionRequest<T>) => {
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const dotsPopupRef = useRef(null);
+export const InspectionRequestsTable = () => {
   const router = useRouter();
-
-  const open = Boolean(anchorEl);
-  const id = open ? "simple-popper" : undefined;
-
-  useClickAway(dotsPopupRef, () => {
-    setAnchorEl(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [inspectionData, setInspectionData] = useState({
+    rows: [],
+    pagination: {
+      page: 1,
+      pageSize: 10,
+    },
+    totalRowCount: 0,
+    loading: true,
   });
+  const debouncedSearch = useDebounce(searchQuery);
 
-  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    event.preventDefault();
-    event.stopPropagation(); // Prevents bubbling
-    setAnchorEl(anchorEl ? null : event.currentTarget);
+  const fetchInspections = async (params?: string) => {
+    const response = await axios.get(
+      `/api/inspections${params ? `?${params}` : ""}`
+    );
+    return response;
   };
+  useEffect(() => {
+    const fetchData = async () => {
+      setInspectionData((prev) => ({ ...prev, loading: true }));
+      const paramsObj: Record<string, string> = {
+        status: statusFilter,
+        search: debouncedSearch,
+      };
 
-  const columns: GridColDef[] = [
-    {
-      field: "requestId",
-      headerName: "Request ID",
-      flex: 0.5,
-    },
-    {
-      field: "itemName",
-      headerName: "Item name",
-      flex: 1,
-    },
-    {
-      field: "category",
-      headerName: "Category",
-      flex: 0.5,
-    },
-    { field: "date", headerName: "Request date", flex: 0.7 },
-    {
-      field: "status",
-      headerName: "Status",
-      flex: 0.7,
-      renderCell: ({ value }) => {
-        return (
-          <span
-            className={`flex gap-x-1 items-center justify-start w-1/2 px-2 py-1 rounded-full font-medium text-sm
-			  ${getStatusClass(value)}`}
-          >
-            <GoDotFill size={20} /> {value}
-          </span>
-        );
-      },
-    },
-    {
-      field: "Action",
-      flex: 0.5,
-      renderCell: () => {
-        return (
-          <div className="h-full w-full relative z-10 flex justify-start items-center overflow-visible">
-            <button
-              aria-describedby={id}
-              type="button"
-              onClick={(e) => handleClick(e)}
-              className="cursor-pointer bg-transparent border-none p-0 m-0"
-              style={{ lineHeight: 0 }}
-            >
-              <BsThreeDotsVertical size={16} />
-            </button>
-            <Popper
-              ref={dotsPopupRef}
-              className="px-8 py-4 text-sm z-10 flex flex-col gap-4 items-center rounded-lg border border-primaryBorder bg-white"
-              id={id}
-              open={open}
-              anchorEl={anchorEl}
-            >
-              <Link
-                className="text-xs hover:underline hover:text-blue-600"
-                href={`/dashboard/inspection-details`}
-              >
-                View
-              </Link>
+      const params = new URLSearchParams(paramsObj);
+      const response = await fetchInspections(params.toString());
 
-              <button className="text-xs hover:underline hover:text-green-600">
-                Approve
-              </button>
+      console.log("Inspection fetch response:", response.data.data);
 
-              <button className="text-xs hover:underline hover:text-red-600">
-                Declined
-              </button>
-            </Popper>
-          </div>
-        );
-      },
-    },
-  ];
+      const data = response.data.data;
+      setInspectionData((prev) => ({
+        ...prev,
+        rows: data.data,
+        pagination: {
+          page: data.current_page,
+          pageSize: data.per_page,
+        },
+        totalRowCount: data.total,
+        loading: false,
+      }));
+    };
 
-  const mobileColumns: GridColDef[] = [
-    {
-      field: "requestId",
-      headerName: "Request ID",
-      flex: 1,
-    },
-    {
-      field: "itemName",
-      headerName: "Item name",
-      flex: 1,
-    },
-    {
-      field: "category",
-      headerName: "Category",
-      flex: 1,
-    },
-  ];
-  // Pagination states
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
-
-  // Logic for displaying current items
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = rows.slice(indexOfFirstItem, indexOfLastItem);
-
-  // Change page
-  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
-
-  const getStatusClass = (status: string) => {
-    switch (status) {
-      case "Active":
-        return "text-red-500 bg-red-100";
-      case "Pending":
-        return "text-yellow-500 bg-yellow-100";
-      case "Approved":
-        return "text-green-500 bg-green-100";
-      case "Scheduled":
-        return "text-[#9F1AB1] bg-[#FBE8FF]";
-      default:
-        return "";
-    }
-  };
-  // Total number of pages
-  const totalPages = Math.ceil(rows.length / itemsPerPage);
+    fetchData();
+  }, [debouncedSearch, statusFilter]);
 
   return (
-    <div className="container mx-auto pt-4 md:p-4">
-      <div className="hidden md:block bg-white w-full">
-        <MuiTableComponent
-          columns={columns}
-          rows={currentItems}
-          showCheckbox
-          paginationActive={false}
-          pageSize={itemsPerPage}
-        />
-      </div>
-
-      {/* Mobile View */}
-      <div className="md:hidden bg-white w-full">
-        <MuiTableComponent
-          columns={mobileColumns}
-          rows={currentItems}
-          showCheckbox
-          onRowClick={() => {
-            router.push("/dashboard/inspection-details");
+    <div className="bg-white rounded-lg p-6">
+      <header className="w-full flex flex-wrap gap-2 items-center justify-between">
+        {/* <div className="text-sm px-4 py-1.5 border border-grey/40 rounded-lg flex items-center gap-2">
+          <select
+            onChange={(e) => {
+              console.log("Status Filter Changed:", e.target.value);
+              setStatusFilter(e.target.value);
+            }}
+            className="outline-none bg-transparent p-1"
+          >
+            <option value="">All Status</option>
+            <option value="failed">Failed</option>
+            <option value="scheduled">Scheduled</option>
+            <option value="passed">Passed</option>
+            <option value="assigned">Assigned</option>
+          </select>
+        </div> */}
+        <StatusSelect
+          options={[
+            { label: "All", value: "" },
+            { label: "Passed", value: "passed" },
+            { label: "Scheduled", value: "scheduled" },
+            { label: "Failed", value: "failed" },
+            { label: "Assigned", value: "assigned" },
+          ]}
+          onChange={(value) => {
+            setStatusFilter(value);
           }}
-          paginationActive={false}
-          pageSize={itemsPerPage}
+          value={statusFilter}
         />
-      </div>
-      {/* Pagination */}
-      <div className="hidden md:flex justify-between items-center mt-4">
-        <div className="text-sm text-gray-700">
-          Showing {indexOfFirstItem + 1} - {indexOfLastItem} of {rows.length}
-        </div>
-        <div className="flex items-center md:space-x-6">
-          {/* Previous Button */}
-          <button
-            onClick={() => paginate(currentPage - 1)}
-            disabled={currentPage === 1}
-            className={`px-3 py-3 rounded-lg border ${
-              currentPage === 1
-                ? "opacity-70 border-grey/50 "
-                : "border-orange text-black"
-            }`}
-          >
-            <ArrowLeft2 size={14} />
-          </button>
-          {/* Page Numbers */}
-          <div className="flex items-center gap-3">
-            {[...Array(totalPages)].map((_, i) => (
-              <button
-                key={i}
-                onClick={() => paginate(i + 1)}
-                className={`size-8 grid place-items-center rounded-full ${
-                  currentPage === i + 1
-                    ? "bg-orange text-white"
-                    : "hover:bg-gray-100"
-                }`}
-              >
-                {i + 1}
-              </button>
-            ))}
-          </div>
-          {/* Next Button */}
-          <button
-            onClick={() => paginate(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className={`px-3 py-3 rounded-lg border ${
-              currentPage === totalPages
-                ? "opacity-70 border-grey/50 "
-                : "border-orange text-black"
-            }`}
-          >
-            <ArrowRight2 size={14} />
-          </button>
+        <TableSearchInput
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          placeholder="Search inspections"
+        />
+      </header>
+      <div className="container mx-auto pt-4 md:p-4">
+        <div className=" bg-white w-full">
+          <MuiTableComponent
+            columns={inspectionColumns}
+            rows={inspectionData.rows}
+            showCheckbox
+            loading={inspectionData.loading}
+            currentPage={inspectionData.pagination.page}
+            onRowClick={() => {
+              router.push("/dashboard/inspection-details");
+            }}
+            totalRowCount={inspectionData.totalRowCount}
+            onPageChange={(model) => {
+              setInspectionData((prev) => ({
+                ...prev,
+                pagination: {
+                  page: model.page,
+                  pageSize: model.pageSize,
+                },
+              }));
+            }}
+            onSelect={(selectedRows) => {
+              console.log("Selected rows:", selectedRows);
+            }}
+            pageSize={inspectionData.pagination.pageSize}
+          />
         </div>
       </div>
     </div>

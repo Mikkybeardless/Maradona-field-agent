@@ -3,6 +3,7 @@ import { Work_Sans } from "next/font/google";
 import "./globals.css";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import ReduxProvider from "./_components/redux/ReduxProvider";
 
 export const metadata: Metadata = {
   title: "Field Agent",
@@ -22,8 +23,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${work_sans.className}`}>
-      <body>{children}</body>
-      <ToastContainer position="top-right" autoClose={3000} />
+      <body>
+        <ReduxProvider>{children}</ReduxProvider>
+        <ToastContainer position="top-right" autoClose={3000} />
+      </body>
     </html>
   );
 }

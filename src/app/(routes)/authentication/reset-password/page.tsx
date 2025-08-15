@@ -1,9 +1,9 @@
-import { ResetPasswordCard } from "@/app/_components/reset-password-card/reset-password-card";
+import ResetPassword from "@/app/_components/auth-cards/resetPassword";
 
 export default function Page() {
-	return (
-		<section className="grid place-items-center h-screen">
-			<ResetPasswordCard />
-		</section>
-	)
+  return (
+    <section className="flex justify-between">
+      <ResetPassword />
+    </section>
+  );
 }

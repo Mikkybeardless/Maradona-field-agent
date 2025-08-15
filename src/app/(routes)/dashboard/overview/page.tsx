@@ -1,53 +1,89 @@
 "use client";
-import { InspectionRequestsTable } from "@/app/_components/inspection-requests-table/inspection-requests-table";
-import { Export, SearchNormal1 } from "iconsax-react";
+
+import { Export } from "iconsax-react";
 import { DateSelect } from "../../../_components/common/dateSelect";
 import Link from "next/link";
 import { HiOutlinePencil } from "react-icons/hi";
 import { FaRegClock } from "react-icons/fa";
 import { GoDotFill } from "react-icons/go";
-import { useEffect } from "react";
-import inspectionService from "@/app/api/services/inspection.service";
+import { useCallback, useEffect, useState } from "react";
+import { TableSearchInput } from "@/app/_components/inspection-requests-table/tableSearchInput";
+import MuiTableComponent from "@/app/_components/table/TableComp";
+import { FilterGroup } from "@/app/_components/common/FilterGroup";
+import { StatusSelect } from "@/app/_components/common/statusSelect";
+import { Dayjs } from "dayjs";
+import { useDebounce } from "@/app/hooks/useDebounce";
+import formatDayJs from "@/app/helper/helperFunction";
+import { inspectionColumns } from "@/app/_components/table/colums";
+import { useRouter } from "next/navigation";
+import axios from "axios";
 
+type IFilter = {
+  type: string;
+  status: string;
+  date: Dayjs | null;
+};
 export default function Page() {
-  const rows = () => {
-    const data = Array.from({ length: 100 }, (_, i) => ({
-      id: i + 1,
-      requestId: `Request ID ${i + 1}`,
-      itemName: `Item Name ${i + 1}`,
-      category: i % 2 === 0 ? "Land" : "Vehicle",
-      date: `Date ${i + 1}`,
-      status:
-        i < 5
-          ? "Approved"
-          : i < 10 && i > 5
-          ? "Pending"
-          : i < 15 && i > 10
-          ? "Active"
-          : "Scheduled",
-    }));
-    return data;
+  const router = useRouter();
+  const [inspectionData, setInspectionData] = useState({
+    rows: [],
+    pagination: {
+      page: 1,
+      pageSize: 10,
+    },
+    totalRowCount: 0,
+    loading: true,
+  });
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filters, setFilters] = useState<IFilter>({
+    type: "",
+    status: "",
+    date: null,
+  });
+  const debouncedSearchQuery = useDebounce(searchQuery); // Assuming you have a debounce hook, otherwise use the searchQuery directly
+  const formatedDate = formatDayJs(filters.date);
+  const fetchInspections = async (params?: string) => {
+    const response = await axios.get(
+      `/api/inspections${params ? `?${params}` : ""}`
+    );
+    return response;
   };
+  const fetchData = useCallback(async () => {
+    setInspectionData((prev) => ({ ...prev, loading: true }));
+    const paramsObj: Record<string, string> = {
+      type: filters.type,
+      status: filters.status,
+      search: debouncedSearchQuery,
+    };
+    if (formatedDate) {
+      paramsObj.created_at = formatedDate;
+    }
+    const params = new URLSearchParams(paramsObj);
+    const response = await fetchInspections(params.toString());
+    console.log("Inspection fetch response:", response.data.data);
+    const data = response.data.data;
+    setInspectionData((prev) => ({
+      ...prev,
+      rows: data.data,
+      pagination: {
+        page: data.current_page,
+        pageSize: data.per_page,
+      },
+      totalRowCount: data.total,
+      loading: false,
+    }));
+  }, [
+    debouncedSearchQuery,
+    formatedDate,
+    filters.date,
+    filters.type,
+    filters.status,
+  ]);
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await inspectionService.getInspections();
-        console.log("Inspection Requests:", response);
-      } catch (error) {
-        console.error("Error fetching inspections:", error);
-      }
-    };
-    const fetchById = async () => {
-      try {
-        const response = await inspectionService.getInspection(4);
-        console.log("Inspection Request by ID:", response);
-      } catch (error) {
-        console.error("Error fetching inspection by ID:", error);
-      }
-    };
-    fetchById();
     fetchData();
-  }, []);
+  }, [fetchData]);
+
   return (
     <section className="flex bg-white mt-5 flex-col gap-4 py-10">
       <header className=" px-2 md:px-6 py-4 space-y-6">
@@ -62,7 +98,7 @@ export default function Page() {
               <span>👋</span>
               Welcome back Rose! <GoDotFill className="text-blue-700" />
             </p>
-            <div className="flex md:items-center gap-1 md:gap-2">
+            <div className="flex md:items-center gap-2">
               <p className="text-[#5C4D58] text-xs">
                 Last login:{" "}
                 <span className="text-[#150A13]">Sept 25, 2024</span>
@@ -129,7 +165,7 @@ export default function Page() {
           </button>
         </div>
 
-        <div className="bg-white rounded-lg md:p-6">
+        {/* <div className="bg-white rounded-lg md:p-6">
           <header className="w-full flex flex-wrap gap-3   items-center justify-between">
             <div className="flex items-center flex-wrap gap-3">
               <div className="text-sm px-4 py-1.5 border border-grey/40 rounded-lg flex items-center gap-2">
@@ -167,8 +203,93 @@ export default function Page() {
               />
             </div>
           </header>
-          <InspectionRequestsTable rows={rows()} />
+          <InspectionRequestsTable />
+        </div> */}
+
+        {/* Filters & Search Bar */}
+        <div className="">
+          <FilterGroup
+            filters={filters}
+            onChange={(updated) => {
+              setFilters((prev) => ({ ...prev, ...updated }));
+            }}
+            selects={[
+              {
+                name: "type",
+                placeholder: "Category",
+                options: [
+                  { label: "All", value: "" },
+                  { label: "House", value: "HOUSE" },
+                  { label: "Cars", value: "CAR" },
+                  { label: "Land", value: "LAND" },
+                ],
+              },
+            ]}
+            extraFilters={
+              <>
+                <StatusSelect
+                  options={[
+                    { label: "All", value: "" },
+                    { label: "Passed", value: "passed" },
+                    { label: "Scheduled", value: "scheduled" },
+                    { label: "Failed", value: "failed" },
+                    { label: "Assigned", value: "assigned" },
+                  ]}
+                  onChange={(value) => {
+                    setFilters((prev) => ({ ...prev, status: value }));
+                  }}
+                  value={filters.status}
+                />
+                <DateSelect
+                  onChange={(date) => {
+                    setFilters((prev) => ({ ...prev, date }));
+                  }}
+                  value={filters.date}
+                />
+              </>
+            }
+            searchNode={
+              <TableSearchInput
+                searchQuery={searchQuery}
+                setSearchQuery={setSearchQuery}
+                placeholder="Search orders"
+              />
+            }
+          />
         </div>
+
+        <section
+          id="products-table"
+          className="mt-3 w-full bg-white overflow-x-auto rounded-md custom-scrollbar"
+        >
+          <div className="min-w-[900px]">
+            <MuiTableComponent
+              columns={inspectionColumns}
+              rows={inspectionData.rows}
+              onRowClick={() => {
+                router.push("/dashboard/inspection-details");
+              }}
+              loading={inspectionData.loading}
+              currentPage={inspectionData.pagination.page}
+              totalRowCount={inspectionData.totalRowCount}
+              onPageChange={(model) => {
+                setInspectionData((prev) => ({
+                  ...prev,
+                  pagination: {
+                    page: model.page,
+                    pageSize: model.pageSize,
+                  },
+                }));
+              }}
+              showCheckbox={true}
+              onSelect={(selections) => {
+                console.log("Selected rows:", selections);
+              }}
+              rowHeight={60}
+              pageSize={inspectionData.pagination.pageSize}
+            />
+          </div>
+        </section>
       </section>
     </section>
   );

@@ -2,9 +2,11 @@
 
 import { EditPasswordModal } from "@/app/_components/modals/change-password-modal";
 import { EditProfileModal } from "@/app/_components/modals/edit-profile-modal";
+import { LogoutModal } from "@/app/_components/modals/logout-modal";
 import { EditPaymentModal } from "@/app/_components/modals/payment-modal";
-import authService, { UpdateProfile } from "@/app/api/services/auth.service";
+import axios from "axios";
 import { ArrowRight2, Camera, Copy } from "iconsax-react";
+import Cookies from "js-cookie";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -13,30 +15,54 @@ import { FaPen } from "react-icons/fa";
 import { GoDotFill } from "react-icons/go";
 import { IoMdMan } from "react-icons/io";
 import { RiEdit2Fill } from "react-icons/ri";
+import { toast } from "react-toastify";
 
 export default function Page() {
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [isChangingPassword, setIsChangingPassword] = useState<boolean>(false);
   const [isPaymentModal, setPaymentModal] = useState(false);
   const [isActive, setIsActive] = useState<boolean>(true);
+  const [isLogoutModal, setIsLogoutModal] = useState<boolean>(false);
+  const [loggingOut, setLoggingOut] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
-      const userProfile = await authService.getProfile();
-      console.log("User Profile: ", userProfile);
+      // const userProfile = await authService.getProfile();
+      // console.log("User Profile: ", userProfile);
     };
 
     fetchProfile();
   }, []);
 
-  const updateProfile = (data: UpdateProfile) => {
+  const updateProfile = () => {
     // const res = authService.updateProfile(data);
-    console.log("Profile Updated: ", data);
+    // console.log("Profile Updated: ", data);
+  };
+
+  const handleLogout = async () => {
+    try {
+      setLoggingOut(true);
+      const res = await axios.post("/api/auth/logout");
+      if (res.status === 200) {
+        toast.success("Logout successful");
+        Cookies.remove("agent_token");
+        window.location.href = "/authentication/login";
+        console.log("Logout successful:", res.data);
+      } else {
+        toast.error("logout failed. pls try again");
+        console.error("Logout failed:", res.data);
+      }
+    } catch (error) {
+      console.error("Logout failed:", error);
+    } finally {
+      setIsLogoutModal(false);
+      setLoggingOut(false);
+    }
   };
 
   return (
     <>
-      <section className="mt-11 flex flex-col mb-10 md:w-2/5 mx-auto">
+      <section className="md:mt-11 flex flex-col mb-10 md:w-2/5 mx-auto">
         {/* Modals */}
         <EditProfileModal
           isOpen={isEditing}
@@ -52,7 +78,7 @@ export default function Page() {
           onClose={() => setPaymentModal(false)}
         />
 
-        <div className="flex items-center gap-2.5 mb-20">
+        <div className="md:flex hidden items-center gap-2.5 mb-20">
           <Link className="text-xs" href="/dashboard/overview">
             Home
           </Link>
@@ -63,7 +89,7 @@ export default function Page() {
         </div>
         <section className="flex flex-col gap-3 items-center">
           <div className="w-full bg-white border border-[#EAE6E9] rounded-lg px-6 py-4">
-            <div className="mx-auto mb-4 grid place-items-center w-fit relative">
+            <div className="mx-auto mb-4 pt-10 md:pt-2 grid place-items-center w-fit relative">
               <Image
                 src="/profilePic.png"
                 width={100}
@@ -213,6 +239,21 @@ export default function Page() {
                   </button>
                 </div>
               </section>
+            </div>
+
+            <div className="flex justify-center">
+              <button
+                className="text-red-500"
+                onClick={() => setIsLogoutModal(true)}
+              >
+                Logout
+              </button>
+              <LogoutModal
+                onConfirm={handleLogout}
+                isOpen={isLogoutModal}
+                isLoggingOut={loggingOut}
+                onClose={() => setIsLogoutModal(false)}
+              />
             </div>
           </section>
         </section>

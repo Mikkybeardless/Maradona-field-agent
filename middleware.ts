@@ -8,5 +8,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*"], // Only matches /dashboard routes
+  matcher: ["/dashboard/:path*"], // Matches /dashboard and nested routes
 };

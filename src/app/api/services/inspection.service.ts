@@ -1,4 +1,4 @@
-import apiClient from "../apiClient";
+import apiClient from "../apiClient.server";
 
 interface InspectionResultData {
   approval_status: "approved" | "rejected";
@@ -15,17 +15,15 @@ interface InspectionData {
 type updateInspectionData = Partial<InspectionData>;
 
 const inspectionService = {
-  getInspections: (params?: string | number) =>
-    apiClient.get("/agent/inspections", { params }),
-  getInspection: (id: number) => apiClient.get(`/agent/inspections/${id}`),
-  submitResult: (id: number, data: InspectionResultData) =>
-    apiClient.post(`/admin/inspections/${id}/result`, data),
-  createInspection: (data: InspectionData) =>
-    apiClient.post("/agent/inspections", data),
+  getInspections: (params?: Record<string, string | number>) =>
+    apiClient.get("/agent/inspection/my-requests", { params }),
+  getInspection: (id: number) =>
+    apiClient.get(`/agent/inspection/requests/${id}`),
+  createInspection: (id: string, data: InspectionData) =>
+    apiClient.post(`/agent/inspection/requests/${id}/schedule`, data),
   updateInspection: (id: number, data: updateInspectionData) =>
-    apiClient.put(`/admin/inspections/${id}/update`, data),
-  deleteInspection: (id: number) =>
-    apiClient.delete(`/admin/inspections/${id}`),
+    apiClient.put(`/agent/inspection/requests/${id}/update-status`, data),
+  deleteInspection: (id: number) => apiClient.delete(`/agent/inspection/${id}`),
 };
 
 export type { InspectionResultData, InspectionData, updateInspectionData };

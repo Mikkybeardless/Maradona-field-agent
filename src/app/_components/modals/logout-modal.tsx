@@ -8,13 +8,15 @@ interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
+  isLoggingOut?: boolean;
 }
 
-export const LogoutModal: React.FC<ModalProps> = ({
+export const LogoutModal = ({
   isOpen,
   onClose,
   onConfirm,
-}) => {
+  isLoggingOut = false,
+}: ModalProps) => {
   if (!isOpen) return null;
 
   const handleBackgroundClick = (
@@ -65,7 +67,7 @@ export const LogoutModal: React.FC<ModalProps> = ({
             onClick={onConfirm}
             className="bg-orange hover:bg-orange-600 text-white rounded-xl py-2 px-6"
           >
-            Logout
+            {isLoggingOut ? "Logging out..." : "Logout"}
           </button>
         </div>
       </div>

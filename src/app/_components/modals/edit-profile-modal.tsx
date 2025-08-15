@@ -1,21 +1,16 @@
 "use client";
 
-import { UpdateProfile } from "@/app/api/services/auth.service";
 import { Add } from "iconsax-react";
 import { useState } from "react";
 
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: UpdateProfile) => void;
+  onSubmit: (data: Record<string, string>) => void;
 }
 
-export const EditProfileModal: React.FC<ModalProps> = ({
-  isOpen,
-  onClose,
-  onSubmit,
-}) => {
-  const [formData, setFormData] = useState<UpdateProfile>({
+export const EditProfileModal = ({ isOpen, onClose, onSubmit }: ModalProps) => {
+  const [formData, setFormData] = useState({
     full_name: "",
     email: "",
     phone_no: "",

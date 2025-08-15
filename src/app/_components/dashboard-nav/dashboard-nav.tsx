@@ -8,11 +8,13 @@ import { LogoutModal } from "../modals/logout-modal";
 import { usePathname } from "next/navigation";
 import { IoReceiptOutline } from "react-icons/io5";
 import { FaRegUserCircle } from "react-icons/fa";
-import authService from "@/app/api/services/auth.service";
 import { toast } from "react-toastify";
+import axios from "axios";
+import Cookies from "js-cookie";
 
 export const DashboardNav = () => {
   const [isLogoutModal, setIsLogoutModal] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const pathName = usePathname();
   const NavigationLinks = [
     {
@@ -75,18 +77,22 @@ export const DashboardNav = () => {
 
   const handleLogout = async () => {
     try {
-      const res = await authService.logout();
+      setIsLoggingOut(true);
+      const res = await axios.post("/api/auth/logout");
       if (res.status === 200) {
         toast.success("Logout successful");
+        Cookies.remove("agent_token");
+        window.location.href = "/authentication/login";
         console.log("Logout successful:", res.data);
       } else {
+        toast.error("logout failed. pls try again");
         console.error("Logout failed:", res.data);
       }
     } catch (error) {
       console.error("Logout failed:", error);
     } finally {
       setIsLogoutModal(false);
-      window.location.href = "/authentication/login"; // Redirect to login page after logout
+      setIsLoggingOut(false);
     }
   };
   return (
@@ -109,6 +115,7 @@ export const DashboardNav = () => {
         <LogoutModal
           onConfirm={handleLogout}
           isOpen={isLogoutModal}
+          isLoggingOut={isLoggingOut}
           onClose={() => setIsLogoutModal(false)}
         />
         <div className="flex items-center gap-20">

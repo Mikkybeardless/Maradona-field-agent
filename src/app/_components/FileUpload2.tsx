@@ -1,68 +1,91 @@
 import { useDropzone } from "react-dropzone";
-import { useState, useEffect } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { IoCloudUploadOutline } from "react-icons/io5";
 
 interface FileUploadProps {
   acceptedFileTypes: { [key: string]: string[] };
-  title: string;
   maxSizeMB?: number;
   maxFiles?: number;
   className?: string;
   Child?: React.ReactNode;
+  files?: File[]; // controlled prop
+  setFiles?: React.Dispatch<React.SetStateAction<File[]>>; // setter from parent
   onFilesChange?: (files: File[]) => void;
+  title?: string;
 }
-// Reusable FileUpload component that can be used multiple times
+
 export const FileUpload2 = ({
   acceptedFileTypes,
   maxSizeMB = 20,
   maxFiles = undefined,
   className = "",
   Child,
+  files: controlledFiles,
+  setFiles: setControlledFiles,
   onFilesChange = () => {},
-  title = "Upload Files",
+  title = "Upload File",
 }: FileUploadProps) => {
-  const [files, setFiles] = useState<File[]>([]);
+  const [internalFiles, setInternalFiles] = useState<File[]>([]);
+  const [objectUrls, setObjectUrls] = useState<string[]>([]);
 
-  const { getRootProps, getInputProps, isDragActive, acceptedFiles } =
-    useDropzone({
-      accept: acceptedFileTypes,
-      maxSize: maxSizeMB * 1000000, // Convert MB to bytes
-      maxFiles: maxFiles,
-    });
+  // If parent passes files, use them; otherwise use internal state
+  const files = controlledFiles ?? internalFiles;
+  const setFiles = setControlledFiles ?? setInternalFiles;
 
-  // Update our state when acceptedFiles changes
-  useEffect(() => {
-    if (acceptedFiles.length > 0) {
-      // Add new files to the existing array, avoiding duplicates
+  const isSameFile = (a: File, b: File) =>
+    a.name === b.name && a.size === b.size && a.lastModified === b.lastModified;
+
+  const onDrop = useCallback(
+    (newFiles: File[]) => {
       setFiles((prevFiles) => {
-        const newFiles = acceptedFiles.filter(
+        const uniqueFiles = newFiles.filter(
           (newFile) =>
-            !prevFiles.some(
-              (existingFile) =>
-                existingFile.name === newFile.name &&
-                existingFile.size === newFile.size &&
-                existingFile.lastModified === newFile.lastModified
-            )
+            !prevFiles.some((existingFile) => isSameFile(existingFile, newFile))
         );
-        const updatedFiles = [...prevFiles, ...newFiles];
-        onFilesChange(updatedFiles); // Notify parent component
+        const updatedFiles = [...prevFiles, ...uniqueFiles];
+        onFilesChange(updatedFiles);
         return updatedFiles;
       });
-    }
-  }, [acceptedFiles, onFilesChange]);
+    },
+    [setFiles, onFilesChange]
+  );
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    accept: acceptedFileTypes,
+    maxSize: maxSizeMB * 1000000,
+    maxFiles: maxFiles,
+    onDrop,
+  });
 
   const removeFile = (fileToRemove: File) => {
     setFiles((prevFiles) => {
-      const updatedFiles = prevFiles.filter((file) => file !== fileToRemove);
-      onFilesChange(updatedFiles); // Notify parent component
+      const updatedFiles = prevFiles.filter(
+        (file) => !isSameFile(file, fileToRemove)
+      );
+      onFilesChange(updatedFiles);
       return updatedFiles;
     });
   };
+  useEffect(() => {
+    const urls = files
+      .filter(
+        (file) =>
+          file.type.startsWith("image/") || file.type.startsWith("video/")
+      )
+      .map((file) => URL.createObjectURL(file));
+
+    setObjectUrls(urls);
+
+    return () => {
+      urls.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, [files]);
 
   const fileList = files.map((file, index) => {
     const isImage = file.type.startsWith("image/");
     const isVideo = file.type.startsWith("video/");
     const isPDF = file.type === "application/pdf";
+    const objectUrl = objectUrls[index]; // Use precomputed URL
 
     return (
       <div className="relative" key={index}>
@@ -77,11 +100,11 @@ export const FileUpload2 = ({
         {isImage ? (
           <img
             className="w-full h-[5rem] object-cover rounded-lg bg-gray-100"
-            src={URL.createObjectURL(file)}
+            src={objectUrl}
             alt="Uploaded preview"
           />
         ) : isVideo ? (
-          <VideoPreview file={file} />
+          <VideoPreview objectUrl={objectUrl} />
         ) : isPDF ? (
           <PDFPreview />
         ) : (
@@ -97,14 +120,20 @@ export const FileUpload2 = ({
     );
   });
 
+  // Cleanup all object URLs
+  useEffect(() => {
+    return () => {
+      objectUrls.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, [objectUrls]);
+
   return (
     <div className={`w-full ${className}`}>
-      <h2 className="font-medium text-lg mb-2">{title}</h2>
-
+      <h1 className="font-medium text-lg mb-2">{title}</h1>
       <div
         {...getRootProps({
           "aria-label": "drag and drop area",
-          className: ` ${
+          className: `${
             isDragActive ? "border-blue-500 bg-blue-50" : "border-gray-300"
           }`,
         })}
@@ -112,9 +141,7 @@ export const FileUpload2 = ({
       >
         <input {...getInputProps()} />
         {isDragActive ? (
-          <>
-            <p className="">Drop file(s) here...</p>
-          </>
+          <p>Drop file(s) here...</p>
         ) : Child ? (
           Child
         ) : (
@@ -133,7 +160,7 @@ export const FileUpload2 = ({
 
       {files.length > 0 && (
         <div className="mt-4">
-          <div className="w-full grid md:grid-cols-2 gap-5">{fileList}</div>
+          <div className="w-full grid grid-cols-2 gap-5">{fileList}</div>
         </div>
       )}
     </div>
@@ -160,12 +187,12 @@ export const PDFPreview = () => {
   );
 };
 
-const VideoPreview = ({ file }: { file: File }) => {
+const VideoPreview = ({ objectUrl }: { objectUrl: string }) => {
   return (
     <div className="w-full h-[5rem] rounded-lg bg-gray-100 overflow-hidden">
       <video
         className="w-full h-full object-cover"
-        src={URL.createObjectURL(file)}
+        src={objectUrl}
         controls={false}
         muted
         onMouseOver={(e) => e.currentTarget.play()}

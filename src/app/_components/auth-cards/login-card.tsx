@@ -1,15 +1,13 @@
 "use client";
-
-import Image from "next/image";
-import logo from "@/app/_assets/images/logo.png";
 import Link from "next/link";
 import { useState } from "react";
-// import authService from "@/app/api/services/auth.service";
 import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import { Spinner } from "../common/spinner";
 import axios from "axios";
+import { useDispatch } from "react-redux";
+import { login } from "@/app/redux/slices/authSlice";
 
 export const LoginCard = () => {
   const [passwordInputType, setPasswordInputType] = useState("password");
@@ -18,13 +16,13 @@ export const LoginCard = () => {
     password: "",
   });
   const [error, setError] = useState("");
-
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const dispatch = useDispatch();
 
   const handleLoginChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setError("");
     const { name, value } = e.target;
-
     setLoginData((prev) => ({
       ...prev,
       [name]: value,
@@ -41,43 +39,23 @@ export const LoginCard = () => {
       return;
     }
     try {
-      const response = await axios.post("/api/login", {
+      const response = await axios.post("/api/auth/login", {
         email: email,
         password: password,
-        login_by: "email",
-        user_type: "agent",
       });
 
       if (response.status == 200) {
-        const data = response.data;
-        console.log("Login successful:", data);
-
+        const data = response.data.data;
+        console.log("Login successful:", data.token);
+        dispatch(login(data.user));
         // Set cookies
-        Cookies.set("token", data.access_token, {
-          expires: 1 / 24, // 1 hour
-          secure: true,
-          sameSite: "strict",
-        });
+        Cookies.set("agent_token", data.token);
 
-        if (data.user) {
-          Cookies.set("user", JSON.stringify(data.user), {
-            expires: 1 / 24, // 1 hour
-            secure: true,
-            sameSite: "strict",
-          });
-        }
-        // data.user !== null &&
-        //   data.user !== undefined &&
-        //   Cookies.set("user", JSON.stringify(data.user));
         toast.success("Login successful");
         // Redirect
         return setTimeout(() => {
           router.push("/dashboard/overview");
-        }, 3000);
-      } else if (response.status == 401) {
-        toast.error("Invalid credentials");
-        setError("Invalid credentials");
-        return;
+        }, 2000);
       }
     } catch (err: unknown) {
       console.error("Login error:", err);
@@ -86,14 +64,16 @@ export const LoginCard = () => {
           axios.isAxiosError(err) && err.response
             ? err.response.status
             : undefined;
-        if (status === 401) {
-          return "Invalid credentials";
-        } else if (status === 403) {
-          return "You are not authorized to access this page";
-        } else if (status === 404) {
-          return "User not found";
-        } else {
-          return "An unknown error occurred. Please try again.";
+
+        switch (status) {
+          case 401:
+            return "Invalid credentials";
+          case 403:
+            return "You are not authorized to access this page";
+          case 404:
+            return "User not found";
+          default:
+            return "An unknown error occurred. Please try again.";
         }
       });
     } finally {
@@ -102,15 +82,8 @@ export const LoginCard = () => {
   };
 
   return (
-    <section className="space-y-3">
-      <Image
-        src={logo}
-        width={265}
-        height={103}
-        alt="logo"
-        className="mx-auto"
-      />
-      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-lg">
+    <section className=" w-full  max-w-[500px]">
+      <div className="bg-white p-8 rounded-xl shadow-md w-full">
         <form onSubmit={handleLogin}>
           <div className="space-y-1 mb-5">
             <label htmlFor="email" className="font-work-sans">
@@ -184,14 +157,14 @@ export const LoginCard = () => {
 
           <button
             type="submit"
-            className="bg-orange w-full flex justify-center items-center p-4 rounded-md text-white font-medium"
+            className="bg-orange hover:bg-amber-700 w-full flex justify-center items-center p-4 rounded-md text-white font-medium"
           >
             {isLoading ? <Spinner /> : "Login"}
           </button>
         </form>
         {error && (
           <>
-            <p className="text-red-500 text-sm mt-2">{error}</p>
+            <p className="text-red-500 text-center text-sm mt-2">{error}</p>
           </>
         )}
       </div>
