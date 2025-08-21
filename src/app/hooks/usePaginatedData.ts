@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import isEqual from "lodash/isEqual"; // you’ll need `npm install lodash`
 
 interface Pagination {
   page: number;
@@ -41,6 +41,12 @@ export function usePaginatedData<T>(
 
   const { pagination } = state;
 
+  // ✅ Memoize filters to avoid infinite deps
+  const stableFilters = useMemo(
+    () => options?.filters ?? {},
+    [options?.filters]
+  );
+
   const fetchData = useCallback(async () => {
     setState((prev) => ({ ...prev, loading: true }));
 
@@ -48,7 +54,7 @@ export function usePaginatedData<T>(
       page: pagination.page.toString(),
       per_page: pagination.pageSize.toString(),
       ...Object.fromEntries(
-        Object.entries(options?.filters ?? {}).filter(
+        Object.entries(stableFilters).filter(
           ([, value]) => value !== undefined && value !== ""
         )
       ),
@@ -56,29 +62,39 @@ export function usePaginatedData<T>(
 
     try {
       const res = await fetchFn(params.toString());
+
       console.log(
-        `${
-          options?.dataName ? options?.dataName : "paginated"
-        } fetch response:`,
+        `${options?.dataName ?? "paginated"} fetch response:`,
         res.data
       );
-      setState((prev) => ({
-        ...prev,
-        rows: res.data.data,
-        pagination: {
-          page: res.data.current_page,
-          pageSize: res.data.per_page,
-        },
-        totalRowCount: res.data.total,
-        loading: false,
-      }));
-    } catch (err: any) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
 
+      const data = res.data.data;
+
+      setState((prev) => {
+        // ✅ Prevent redundant state updates that trigger loops
+        if (
+          prev.pagination.page === data.current_page &&
+          prev.pagination.pageSize === data.per_page &&
+          isEqual(prev.rows, data.data) &&
+          prev.totalRowCount === data.total
+        ) {
+          return { ...prev, loading: false };
+        }
+
+        return {
+          ...prev,
+          rows: data.data,
+          pagination: {
+            page: data.current_page,
+            pageSize: data.per_page,
+          },
+          totalRowCount: data.total,
+          loading: false,
+        };
+      });
+    } catch (err: unknown) {
       console.error(
-        `Paginated fetch failed: ${
-          options?.dataName ? options?.dataName : "data"
-        }`,
+        `Paginated fetch failed: ${options?.dataName ?? "data"}`,
         err
       );
       setState((prev) => ({ ...prev, loading: false }));
@@ -87,7 +103,8 @@ export function usePaginatedData<T>(
     fetchFn,
     pagination.page,
     pagination.pageSize,
-    JSON.stringify(options?.filters),
+    stableFilters,
+    options?.dataName,
   ]);
 
   useEffect(() => {

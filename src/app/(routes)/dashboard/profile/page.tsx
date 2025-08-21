@@ -4,8 +4,9 @@ import { EditPasswordModal } from "@/app/_components/modals/change-password-moda
 import { EditProfileModal } from "@/app/_components/modals/edit-profile-modal";
 import { LogoutModal } from "@/app/_components/modals/logout-modal";
 import { EditPaymentModal } from "@/app/_components/modals/payment-modal";
+import { RootState } from "@/app/redux/store";
 import axios from "axios";
-import { ArrowRight2, Camera, Copy } from "iconsax-react";
+import { ArrowRight2, Copy } from "iconsax-react";
 import Cookies from "js-cookie";
 import Image from "next/image";
 import Link from "next/link";
@@ -14,7 +15,8 @@ import { BsToggleOff, BsToggleOn } from "react-icons/bs";
 import { FaPen } from "react-icons/fa";
 import { GoDotFill } from "react-icons/go";
 import { IoMdMan } from "react-icons/io";
-import { RiEdit2Fill } from "react-icons/ri";
+// import { RiEdit2Fill } from "react-icons/ri";
+import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 
 export default function Page() {
@@ -24,6 +26,7 @@ export default function Page() {
   const [isActive, setIsActive] = useState<boolean>(true);
   const [isLogoutModal, setIsLogoutModal] = useState<boolean>(false);
   const [loggingOut, setLoggingOut] = useState<boolean>(false);
+  const { user } = useSelector((state: RootState) => state.auth);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -91,26 +94,24 @@ export default function Page() {
           <div className="w-full bg-white border border-[#EAE6E9] rounded-lg px-6 py-4">
             <div className="mx-auto mb-4 pt-10 md:pt-2 grid place-items-center w-fit relative">
               <Image
-                src="/profilePic.png"
+                src="/default_profile.png"
                 width={100}
                 height={100}
                 alt="logo"
                 className=" rounded-full object-contain"
               />
-              <button
+              {/* <button
                 type="button"
                 className="size-6 bg-gray-100 shadow-md rounded-full grid place-items-center absolute bottom-0 right-1.5"
               >
                 <Camera size={16} color="#000000" />
-              </button>
+              </button> */}
             </div>
 
             <div className="w-fit text-center mx-auto mt-4">
-              <h2 className="text-xl font-semibold">Rosemary Sunday</h2>
+              <h2 className="text-xl font-semibold">{user?.name}</h2>
               <div className="text-center text-gray-600 flex items-center gap-2">
-                <p className="text-sm text-[#150A13]">
-                  rosiesunday20.aj@gmail.com
-                </p>
+                <p className="text-sm text-[#150A13]">{user?.email}</p>
                 <Copy size={16} color="#ACA0A9" />
               </div>
             </div>
@@ -143,9 +144,9 @@ export default function Page() {
               <section className="p-5 text-sm">
                 <div className="flex items-center gap-2  justify-between mb-3">
                   <h6 className="text-[#5C4D58]">Staff ID:</h6>
-                  <p className="text-[#150A13]">DS12000000</p>
+                  <p className="text-[#150A13]">{user?.id}</p>
                 </div>
-
+                {/* 
                 <div className="flex items-center gap-2  justify-between mb-3">
                   {" "}
                   <h6 className="text-[#5C4D58]">Phone:</h6>
@@ -157,7 +158,7 @@ export default function Page() {
                 <div className="flex items-center gap-2  justify-between mb-3">
                   <h6 className="text-[#5C4D58]">Address:</h6>
                   <p className="text-[#150A13]">Lagos, Nigeria</p>
-                </div>
+                </div> */}
 
                 <div className="flex items-center gap-2  justify-between mb-3">
                   <h6 className="text-[#5C4D58]">Staff Type:</h6>
@@ -196,18 +197,18 @@ export default function Page() {
               </section>
             </div>
 
-            <div className="bg-white  p-4 border border-[#EAE6E9] rounded-lg">
+            {/* <div className="bg-white  p-4 border border-[#EAE6E9] rounded-lg">
               <div className="flex justify-between items-center mb-3">
                 <h5 className="text-xl text-[#150A13] font-medium">
                   Payment Info
                 </h5>{" "}
-                {/* <button
+                <button
                   onClick={() => setPaymentModal(true)}
                   type="button"
                   className="flex justify-center text-orange border-orange border gap-2  py-1 px-4 rounded-lg"
                 >
                   Add Payment
-                </button> */}
+                </button>
                 <button>
                   {" "}
                   <RiEdit2Fill size={30} />
@@ -222,7 +223,8 @@ export default function Page() {
                 <h6 className="text-[#5C4D58]">Account No</h6>
                 <p className="text-[#150A13]">07056440321</p>
               </div>
-            </div>
+            </div> */}
+
             <div className="bg-white border border-[#EAE6E9] rounded-lg">
               <header className="px-5 py-3 border-b border-[#EAE6E9">
                 <h5 className="text-xl text-[#150A13] font-medium">Password</h5>

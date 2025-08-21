@@ -6,8 +6,8 @@ import { useRouter } from "next/navigation";
 import { TableSearchInput } from "./tableSearchInput";
 import { useDebounce } from "@/app/hooks/useDebounce";
 import { inspectionColumns } from "../table/colums";
-import axios from "axios";
 import { StatusSelect } from "../common/statusSelect";
+import { fetchFn } from "@/app/api/fetchFn";
 
 export const InspectionRequestsTable = () => {
   const router = useRouter();
@@ -24,25 +24,18 @@ export const InspectionRequestsTable = () => {
   });
   const debouncedSearch = useDebounce(searchQuery);
 
-  const fetchInspections = async (params?: string) => {
-    const response = await axios.get(
-      `/api/inspections${params ? `?${params}` : ""}`
-    );
-    return response;
-  };
   useEffect(() => {
     const fetchData = async () => {
       setInspectionData((prev) => ({ ...prev, loading: true }));
       const paramsObj: Record<string, string> = {
+        page: inspectionData.pagination.page.toString(),
+        per_page: inspectionData.pagination.pageSize.toString(),
         status: statusFilter,
         search: debouncedSearch,
       };
 
       const params = new URLSearchParams(paramsObj);
-      const response = await fetchInspections(params.toString());
-
-      console.log("Inspection fetch response:", response.data.data);
-
+      const response = await fetchFn("/api/inspections", params.toString());
       const data = response.data.data;
       setInspectionData((prev) => ({
         ...prev,

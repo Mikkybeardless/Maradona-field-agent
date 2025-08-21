@@ -46,7 +46,7 @@ export const LoginCard = () => {
 
       if (response.status == 200) {
         const data = response.data.data;
-        console.log("Login successful:", data.token);
+        console.log("Login successful:", data.user);
         dispatch(login(data.user));
         // Set cookies
         Cookies.set("agent_token", data.token);

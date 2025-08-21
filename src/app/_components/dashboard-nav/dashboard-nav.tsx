@@ -145,7 +145,7 @@ export const DashboardNav = () => {
           </button>
           <Link href="/dashboard/profile">
             <Image
-              src="/profilePic.png"
+              src="/default_profile.png"
               width={40}
               height={40}
               alt="logo"

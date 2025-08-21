@@ -1,7 +1,7 @@
 import apiClient from "../apiClient.server";
 
 const bidService = {
-  getBids: (params?: string) =>
+  getBids: (params?: Record<string, string>) =>
     apiClient.get("/agent/auction-bids", { params }),
   getBid: (id: number) => apiClient.get(`/agent/bids/${id}`),
   createBid: (data: Record<string, string>) =>

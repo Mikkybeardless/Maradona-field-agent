@@ -9,7 +9,6 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   const token = cookies().get("agent_token")?.value;
-
   if (!token) {
     redirect("/authentication/login");
   }

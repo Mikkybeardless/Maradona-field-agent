@@ -71,7 +71,7 @@ export default function MuiTableComponent({
   return (
     <div className="w-full overflow-x-auto">
       <Paper className="w-full min-w-[400px] min-h-[200px] overflow-hidden">
-        <div style={{ height: 400, width: "100%", overflowX: "auto" }}>
+        <div style={{ width: "100%", overflowX: "auto" }}>
           <DataGrid
             rows={rows}
             rowCount={totalRowCount}

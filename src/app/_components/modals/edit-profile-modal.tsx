@@ -62,7 +62,7 @@ export const EditProfileModal = ({ isOpen, onClose, onSubmit }: ModalProps) => {
           </button>
         </header>
         <form onSubmit={handleSubmit}>
-          <section className="grid grid-cols-2 gap-x-4 gap-y-4">
+          <section className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-4">
             <div className="space-y-1.5">
               <label htmlFor="firstName" className="text-gray-800 font-medium">
                 Full Name
@@ -102,7 +102,7 @@ export const EditProfileModal = ({ isOpen, onClose, onSubmit }: ModalProps) => {
                 className="w-full px-4 text-sm py-2.5 border border-[#B5ABB3] rounded-lg focus:outline-none focus:ring-2 focus:ring-orange"
               />
             </div>
-            <div className="space-y-1.5">
+            {/* <div className="space-y-1.5">
               <label htmlFor="phone_no" className="text-gray-800 font-medium">
                 Phone_no
               </label>
@@ -114,9 +114,9 @@ export const EditProfileModal = ({ isOpen, onClose, onSubmit }: ModalProps) => {
                 onChange={handleChange}
                 className="w-full px-4 text-sm py-2.5 border border-[#B5ABB3] rounded-lg focus:outline-none focus:ring-2 focus:ring-orange"
               />
-            </div>
+            </div> */}
           </section>
-          <div className="flex items-center gap-3 ml-auto w-fit">
+          <div className="flex items-center gap-3 mt-4 ml-auto w-fit">
             <button
               onClick={onClose}
               className="px-10 py-2.5 rounded-lg border-orange text-orange border focus:outline-none"

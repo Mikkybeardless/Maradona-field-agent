@@ -8,7 +8,7 @@ interface CompletedData {
 }
 
 const purchaseEnqService = {
-  getEnquiries: (params?: string) =>
+  getEnquiries: (params?: Record<string, string | number>) =>
     apiClient.get("agent/purchase-inspection-requests", { params }),
   getEnquiry: (id: number) => apiClient.get(`/agent/purchase-enquiry/${id}`),
   scheduleMeeting: (id: string, data: ScheduleData) =>

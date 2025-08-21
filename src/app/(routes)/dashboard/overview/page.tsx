@@ -13,19 +13,42 @@ import { FilterGroup } from "@/app/_components/common/FilterGroup";
 import { StatusSelect } from "@/app/_components/common/statusSelect";
 import { Dayjs } from "dayjs";
 import { useDebounce } from "@/app/hooks/useDebounce";
-import formatDayJs from "@/app/helper/helperFunction";
-import { inspectionColumns } from "@/app/_components/table/colums";
+import formatDayJs, { buildCleanParams } from "@/app/helper/helperFunction";
+import {
+  bidsColumns,
+  purchaseEnqColumns,
+} from "@/app/_components/table/colums";
 import { useRouter } from "next/navigation";
-import axios from "axios";
+import { useSelector } from "react-redux";
+import { RootState } from "@/app/redux/store";
+import { fetchFn } from "@/app/api/fetchFn";
+import { ExportModal } from "@/app/_components/modals/exportModal";
 
 type IFilter = {
   type: string;
   status: string;
   date: Dayjs | null;
 };
+
+interface ISelectedData {
+  purchaseEnqs: Record<string, string | number>[];
+  bids: Record<string, string | number>[];
+}
+
 export default function Page() {
   const router = useRouter();
-  const [inspectionData, setInspectionData] = useState({
+  const { user } = useSelector((state: RootState) => state.auth);
+  const [isExporting, setIsExporting] = useState({
+    purchaseEnq: false,
+    bids: false,
+  });
+  const [selectedData, setSelectedData] = useState<ISelectedData>({
+    purchaseEnqs: [],
+    bids: [],
+  });
+
+  // purchase enquiry
+  const [purchaseEnqData, setPurchaseEnqData] = useState({
     rows: [],
     pagination: {
       page: 1,
@@ -34,35 +57,55 @@ export default function Page() {
     totalRowCount: 0,
     loading: true,
   });
-  const [searchQuery, setSearchQuery] = useState("");
-  const [filters, setFilters] = useState<IFilter>({
+  const [searchPurchaseQuery, setSearchPurchaseQuery] = useState("");
+  const [purchaseFilters, setPurchaseFilters] = useState<IFilter>({
     type: "",
     status: "",
     date: null,
   });
-  const debouncedSearchQuery = useDebounce(searchQuery); // Assuming you have a debounce hook, otherwise use the searchQuery directly
-  const formatedDate = formatDayJs(filters.date);
-  const fetchInspections = async (params?: string) => {
-    const response = await axios.get(
-      `/api/inspections${params ? `?${params}` : ""}`
-    );
-    return response;
-  };
-  const fetchData = useCallback(async () => {
-    setInspectionData((prev) => ({ ...prev, loading: true }));
+  const debouncedSearchPurchaseQuery = useDebounce(searchPurchaseQuery); // Assuming you have a debounce hook, otherwise use the searchQuery directly
+  const formatedPurchaseEnqDate = formatDayJs(purchaseFilters.date);
+
+  // assigned bids
+  const [bidsData, setBidsData] = useState({
+    rows: [],
+    pagination: {
+      page: 1,
+      pageSize: 10,
+    },
+    totalRowCount: 0,
+    loading: true,
+  });
+  const [searchBidsQuery, setSearchBidsQuery] = useState("");
+  const [bidsFilters, setBidsFilters] = useState<IFilter>({
+    type: "",
+    status: "",
+    date: null,
+  });
+  const debouncedSearchBidsQuery = useDebounce(searchBidsQuery);
+  const formattedBidsDate = formatDayJs(bidsFilters.date);
+
+  // Fetch purchase enquiry data
+  const fetchPurchaseEnqData = useCallback(async () => {
+    setPurchaseEnqData((prev) => ({ ...prev, loading: true }));
     const paramsObj: Record<string, string> = {
-      type: filters.type,
-      status: filters.status,
-      search: debouncedSearchQuery,
+      type: purchaseFilters.type,
+      status: purchaseFilters.status,
     };
-    if (formatedDate) {
-      paramsObj.created_at = formatedDate;
+    if (formatedPurchaseEnqDate) {
+      paramsObj.created_at = formatedPurchaseEnqDate;
     }
-    const params = new URLSearchParams(paramsObj);
-    const response = await fetchInspections(params.toString());
-    console.log("Inspection fetch response:", response.data.data);
+
+    // Create URLSearchParams from the filtered params removing any empty values
+    const params = buildCleanParams(
+      paramsObj,
+      debouncedSearchPurchaseQuery,
+      purchaseEnqData.pagination.page,
+      purchaseEnqData.pagination.pageSize
+    );
+    const response = await fetchFn(`/api/purchase-enq`, params.toString());
     const data = response.data.data;
-    setInspectionData((prev) => ({
+    setPurchaseEnqData((prev) => ({
       ...prev,
       rows: data.data,
       pagination: {
@@ -73,19 +116,74 @@ export default function Page() {
       loading: false,
     }));
   }, [
-    debouncedSearchQuery,
-    formatedDate,
-    filters.date,
-    filters.type,
-    filters.status,
+    debouncedSearchPurchaseQuery,
+    formatedPurchaseEnqDate,
+    purchaseFilters.date,
+    purchaseFilters.type,
+    purchaseFilters.status,
   ]);
 
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    fetchPurchaseEnqData();
+  }, [fetchPurchaseEnqData]);
+
+  // fetch assigned bids data
+
+  const fetchAssignedBidsData = useCallback(async () => {
+    setBidsData((prev) => ({ ...prev, loading: true }));
+    const paramsObj: Record<string, string> = {
+      page: bidsData.pagination.page.toString(),
+      per_page: bidsData.pagination.pageSize.toString(),
+      type: bidsFilters.type,
+      status: bidsFilters.status,
+      search: debouncedSearchBidsQuery,
+    };
+    if (formattedBidsDate) {
+      paramsObj.created_at = formattedBidsDate;
+    }
+    const params = buildCleanParams(paramsObj);
+    const response = await fetchFn(`/api/bids`, params.toString());
+    const data = response.data.data;
+    console.log("Assigned bids data:", data);
+    setBidsData((prev) => ({
+      ...prev,
+      rows: data.data,
+      pagination: {
+        page: data.current_page,
+        pageSize: data.per_page,
+      },
+      totalRowCount: data.total,
+      loading: false,
+    }));
+  }, [
+    formattedBidsDate,
+    bidsFilters.date,
+    bidsFilters.type,
+    bidsFilters.status,
+    debouncedSearchBidsQuery,
+  ]);
+  useEffect(() => {
+    fetchAssignedBidsData();
+  }, [fetchAssignedBidsData]);
 
   return (
     <section className="flex bg-white mt-5 flex-col gap-4 py-10">
+      {/* modals */}
+      <ExportModal
+        isOpen={isExporting.purchaseEnq}
+        onClose={() =>
+          setIsExporting((prev) => ({ ...prev, purchaseEnq: false }))
+        }
+        allData={purchaseEnqData.rows}
+        selectedData={selectedData.purchaseEnqs}
+      />
+      <ExportModal
+        isOpen={isExporting.bids}
+        onClose={() => setIsExporting((prev) => ({ ...prev, bids: false }))}
+        allData={bidsData.rows}
+        selectedData={selectedData.bids}
+      />
+
       <header className=" px-2 md:px-6 py-4 space-y-6">
         <div className="flex  justify-between items-end bg-[#FFEFE6] border border-[#FEB68A] rounded-lg px-5 py-4">
           <button className="hover:underline">Add Payment Info</button>
@@ -96,7 +194,7 @@ export default function Page() {
           <div className="space-y-2.5">
             <p className="md:text-2xl flex gap-x-2 font-semibold">
               <span>👋</span>
-              Welcome back Rose! <GoDotFill className="text-blue-700" />
+              Welcome back {user.name}! <GoDotFill className="text-blue-700" />
             </p>
             <div className="flex md:items-center gap-2">
               <p className="text-[#5C4D58] text-xs">
@@ -155,63 +253,28 @@ export default function Page() {
           </div>
         </div>
       </section>
-      <section className="px-2  md:px-6 py-4 space-y-6">
+      {/* pruchase enquiries */}
+      <section className="px-2 mb-10 border border-gray-300 rounded-lg shadow-md  md:px-6 py-4 space-y-6">
         <div className="flex items-center justify-between">
           <h6 className="text-black font-medium md:text-xl mb-5">
-            Inspection Requests
+            Purchase Inspection Requests
           </h6>
-          <button className="px-4 py-1 md:px-6 md:py-2 flex items-center gap-1 bg-orange text-white rounded-lg hover:bg-orange-600">
+          <button
+            onClick={() =>
+              setIsExporting((prev) => ({ ...prev, purchaseEnq: true }))
+            }
+            className="px-4 py-1 md:px-6 md:py-2 flex items-center gap-1 bg-orange text-white rounded-lg hover:bg-orange-600"
+          >
             <Export size="20" /> Export
           </button>
         </div>
 
-        {/* <div className="bg-white rounded-lg md:p-6">
-          <header className="w-full flex flex-wrap gap-3   items-center justify-between">
-            <div className="flex items-center flex-wrap gap-3">
-              <div className="text-sm px-4 py-1.5 border border-grey/40 rounded-lg flex items-center gap-2">
-                <select className="outline-none bg-transparent p-1">
-                  <option value="all">Category</option>
-                  <option value="pending">Land</option>
-                  <option value="pending">Vehicle</option>
-                  <option value="pending">Building</option>
-                </select>
-              </div>
-
-              <div className="text-sm px-4 py-1.5 border border-grey/40 rounded-lg flex items-center gap-2">
-                <select className="outline-none bg-transparent p-1">
-                  <option value="all">Status</option>
-                  <option value="pending">Pending</option>
-                  <option value="pending">Scheduled</option>
-                  <option value="pending">Approved</option>
-                  <option value="pending">Active</option>
-                </select>
-              </div>
-
-              <DateSelect
-                onChange={(val) => {
-                  console.log("date:", val);
-                }}
-                value={null}
-              />
-            </div>
-            <div className="flex items-center gap-2.5 w-[18.75rem] border border-grey/40 rounded-lg px-4 py-2">
-              <SearchNormal1 size={20} />
-              <input
-                type="search"
-                className="w-full text-sm outline-none"
-                placeholder="Search agents"
-              />
-            </div>
-          </header>
-          <InspectionRequestsTable />
-        </div> */}
-
-        {/* Filters & Search Bar */}
+        {/* purchaseFilters & Search Bar */}
         <div className="">
           <FilterGroup
-            filters={filters}
+            filters={purchaseFilters}
             onChange={(updated) => {
-              setFilters((prev) => ({ ...prev, ...updated }));
+              setPurchaseFilters((prev) => ({ ...prev, ...updated }));
             }}
             selects={[
               {
@@ -230,50 +293,49 @@ export default function Page() {
                 <StatusSelect
                   options={[
                     { label: "All", value: "" },
-                    { label: "Passed", value: "passed" },
+                    { label: "Sold", value: "sold" },
                     { label: "Scheduled", value: "scheduled" },
-                    { label: "Failed", value: "failed" },
                     { label: "Assigned", value: "assigned" },
                   ]}
                   onChange={(value) => {
-                    setFilters((prev) => ({ ...prev, status: value }));
+                    setPurchaseFilters((prev) => ({ ...prev, status: value }));
                   }}
-                  value={filters.status}
+                  value={purchaseFilters.status}
                 />
                 <DateSelect
                   onChange={(date) => {
-                    setFilters((prev) => ({ ...prev, date }));
+                    setPurchaseFilters((prev) => ({ ...prev, date }));
                   }}
-                  value={filters.date}
+                  value={purchaseFilters.date}
                 />
               </>
             }
             searchNode={
               <TableSearchInput
-                searchQuery={searchQuery}
-                setSearchQuery={setSearchQuery}
-                placeholder="Search orders"
+                searchQuery={searchPurchaseQuery}
+                setSearchQuery={setSearchPurchaseQuery}
+                placeholder="Search enquiries"
               />
             }
           />
         </div>
 
         <section
-          id="products-table"
+          id="purchase-enquiry-table"
           className="mt-3 w-full bg-white overflow-x-auto rounded-md custom-scrollbar"
         >
           <div className="min-w-[900px]">
             <MuiTableComponent
-              columns={inspectionColumns}
-              rows={inspectionData.rows}
+              columns={purchaseEnqColumns}
+              rows={purchaseEnqData.rows}
               onRowClick={() => {
                 router.push("/dashboard/inspection-details");
               }}
-              loading={inspectionData.loading}
-              currentPage={inspectionData.pagination.page}
-              totalRowCount={inspectionData.totalRowCount}
+              loading={purchaseEnqData.loading}
+              currentPage={purchaseEnqData.pagination.page}
+              totalRowCount={purchaseEnqData.totalRowCount}
               onPageChange={(model) => {
-                setInspectionData((prev) => ({
+                setPurchaseEnqData((prev) => ({
                   ...prev,
                   pagination: {
                     page: model.page,
@@ -283,10 +345,111 @@ export default function Page() {
               }}
               showCheckbox={true}
               onSelect={(selections) => {
-                console.log("Selected rows:", selections);
+                setSelectedData((prev) => ({
+                  ...prev,
+                  purchaseEnqs: selections,
+                }));
               }}
               rowHeight={60}
-              pageSize={inspectionData.pagination.pageSize}
+              pageSize={purchaseEnqData.pagination.pageSize}
+            />
+          </div>
+        </section>
+      </section>
+      {/* Assigned auction bids */}
+      <section className="px-2 border border-gray-300 rounded-lg shadow-md  md:px-6 py-4 space-y-6">
+        <div className="flex items-center justify-between">
+          <h6 className="text-black font-medium md:text-xl mb-5">
+            Assigned Auction Requests
+          </h6>
+          <button
+            onClick={() => setIsExporting((prev) => ({ ...prev, bids: true }))}
+            className="px-4 py-1 md:px-6 md:py-2 flex items-center gap-1 bg-orange text-white rounded-lg hover:bg-orange-600"
+          >
+            <Export size="20" /> Export
+          </button>
+        </div>
+
+        {/* Filters & Search Bar */}
+        <div className="">
+          <FilterGroup
+            filters={bidsFilters}
+            onChange={(updated) => {
+              setBidsFilters((prev) => ({ ...prev, ...updated }));
+            }}
+            selects={[
+              {
+                name: "type",
+                placeholder: "Category",
+                options: [
+                  { label: "All", value: "" },
+                  { label: "House", value: "HOUSE" },
+                  { label: "Cars", value: "CAR" },
+                  { label: "Land", value: "LAND" },
+                ],
+              },
+            ]}
+            extraFilters={
+              <>
+                <StatusSelect
+                  options={[
+                    { label: "All", value: "" },
+                    { label: "Sold", value: "sold" },
+                    { label: "Scheduled", value: "scheduled" },
+                    { label: "Assigned", value: "assigned" },
+                  ]}
+                  onChange={(value) => {
+                    setBidsFilters((prev) => ({ ...prev, status: value }));
+                  }}
+                  value={bidsFilters.status}
+                />
+                <DateSelect
+                  onChange={(date) => {
+                    setBidsFilters((prev) => ({ ...prev, date }));
+                  }}
+                  value={bidsFilters.date}
+                />
+              </>
+            }
+            searchNode={
+              <TableSearchInput
+                searchQuery={searchBidsQuery}
+                setSearchQuery={setSearchBidsQuery}
+                placeholder="Search orders"
+              />
+            }
+          />
+        </div>
+
+        <section
+          id="assigned-bids-table"
+          className="mt-3 w-full bg-white overflow-x-auto rounded-md custom-scrollbar"
+        >
+          <div className="min-w-[900px]">
+            <MuiTableComponent
+              columns={bidsColumns}
+              rows={bidsData.rows}
+              onRowClick={() => {
+                router.push("/dashboard/bid-details");
+              }}
+              loading={bidsData.loading}
+              currentPage={bidsData.pagination.page}
+              totalRowCount={bidsData.totalRowCount}
+              onPageChange={(model) => {
+                setBidsData((prev) => ({
+                  ...prev,
+                  pagination: {
+                    page: model.page,
+                    pageSize: model.pageSize,
+                  },
+                }));
+              }}
+              showCheckbox={true}
+              onSelect={(selections) => {
+                setSelectedData((prev) => ({ ...prev, bids: selections }));
+              }}
+              rowHeight={60}
+              pageSize={bidsData.pagination.pageSize}
             />
           </div>
         </section>
