@@ -3,7 +3,7 @@
 import Image from "next/image";
 // import LogoutIcon from "@/app/_assets/icons/log-out.svg";
 import { FaPhoneAlt, FaStar, FaTimes } from "react-icons/fa";
-import { MdEmail, MdMyLocation } from "react-icons/md";
+import { MdEmail } from "react-icons/md";
 import { LuHouse } from "react-icons/lu";
 import { BsStars } from "react-icons/bs";
 import { FaLocationDot } from "react-icons/fa6";
@@ -13,9 +13,16 @@ import { AiFillMessage } from "react-icons/ai";
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
+  seller?: Seller;
+  product?: Product;
 }
 
-export const SellerInfoModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
+export const SellerInfoModal: React.FC<ModalProps> = ({
+  isOpen,
+  onClose,
+  seller,
+  product,
+}) => {
   if (!isOpen) return null;
 
   const handleBackgroundClick = (
@@ -50,18 +57,19 @@ export const SellerInfoModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
           </div>
 
           <div className="">
-            <h4 className="font-normal text-lg">Stephen Etta</h4>
+            <h4 className="font-normal text-lg">{seller?.name}</h4>
             <p className="text-[#585858]">#1309IRJ2</p>
           </div>
 
           <div>
             <span className="flex items-center gap-1 text-[#585858] text-sm">
-              <FaPhoneAlt className="text-[#FD8133]" /> <span>08093408403</span>
+              <FaPhoneAlt className="text-[#FD8133]" />{" "}
+              <span>{seller?.seller_profile.phone}</span>
             </span>
 
             <span className="flex text-[#585858] items-center gap-1 text-sm font-medium ">
               <MdEmail className="text-[#FD8133]" />{" "}
-              <span>stepetta@email.com</span>
+              <span>{seller?.email}</span>
             </span>
           </div>
         </div>
@@ -82,7 +90,7 @@ export const SellerInfoModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
             <Image src={house} width={130} height={70} alt="house image" />
             <div className="flex flex-col space-y-2">
               <span className="text-xl font-semibold text-[#040421]">
-                2-Bedroom Duplex with Modern Amenities
+                {product?.name}
               </span>
               <span className="flex  items-center gap-2">
                 {" "}
@@ -90,10 +98,18 @@ export const SellerInfoModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
               </span>
               <div className="flex items-center gap-5">
                 <span className="text-[#175CD3] bg-[#D1E9FF] border border-[#175CD3] border-1 rounded-full px-3 py-1 flex items-center gap-1 text-sm ">
-                  <LuHouse /> House
+                  {product?.type === "HOUSE" ? (
+                    <>
+                      {" "}
+                      <LuHouse />
+                      {product.type}
+                    </>
+                  ) : (
+                    <> {product?.type}</>
+                  )}
                 </span>
                 <span className="text-[#FD8133] bg-[#FFFAEB] border border-[#FD8133] border-1 rounded-full px-3 py-1 flex items-center gap-1 text-sm ">
-                  <BsStars /> Brand New
+                  <BsStars /> {product?.condition}
                 </span>
               </div>
             </div>
@@ -107,14 +123,14 @@ export const SellerInfoModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
         <span className="text-[#040421] font-medium">
           Call me 1hr before arriving
         </span>
-        <div className="flex justify-center">
+        {/* <div className="flex justify-center">
           <button
             onClick={onClose}
             className="text-orange hover:bg-inherit flex gap-2 items-center justify-center w-full border-orange hover:text-white hover:bg-orange border rounded-xl py-2 px-4 md:px-10 "
           >
             <MdMyLocation /> Get directions
           </button>
-        </div>
+        </div> */}
       </div>
     </div>
   );

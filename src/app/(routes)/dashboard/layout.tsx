@@ -16,9 +16,7 @@ export default function AuthLayout({
   return (
     <section className="bg-[#FAFAFA] relative">
       <DashboardNav />
-      <main className="mx-auto mt-0 md:mt-20 w-full px-2 max-w-[75rem]">
-        {children}
-      </main>
+      <main className=" mt-0 md:mt-20 w-full px-4 md:px-12 ">{children}</main>
       <div className="mb-20 md:mb-0">
         <Footer />
       </div>

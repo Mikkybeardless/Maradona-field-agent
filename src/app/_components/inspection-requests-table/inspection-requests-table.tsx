@@ -97,8 +97,8 @@ export const InspectionRequestsTable = () => {
             showCheckbox
             loading={inspectionData.loading}
             currentPage={inspectionData.pagination.page}
-            onRowClick={() => {
-              router.push("/dashboard/inspection-details");
+            onRowClick={(row) => {
+              router.push(`/dashboard/inspection-requests/${row.id}`);
             }}
             totalRowCount={inspectionData.totalRowCount}
             onPageChange={(model) => {

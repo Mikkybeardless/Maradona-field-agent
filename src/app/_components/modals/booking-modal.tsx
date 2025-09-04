@@ -71,7 +71,7 @@ export const BookingModal: React.FC<ModalProps> = ({
         } rounded-t-2xl md:rounded-[24px]`}
       >
         <div className="mt-5 flex items-center justify-between gap-x-3 border-b pb-1">
-          <h2 className="text-2xl font-bold">Confirm Booking</h2>
+          <h2 className="text-2xl font-bold">Confirm Inspection</h2>
           <button
             onClick={onClose}
             className="rounded-full bg-gray-200 p-3 hover:underline"

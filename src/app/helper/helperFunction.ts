@@ -80,3 +80,43 @@ export const buildCleanParams = (
 
   return params;
 };
+
+export const formatAmount = (
+  amount: number,
+  currency: string = "NGN"
+): string => {
+  return amount.toLocaleString("en-NG", {
+    style: "currency",
+    currency: currency,
+  });
+};
+
+export function formatDateToYYYYMMDD(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+export const formatTimeToHHMMSS = (date: Date) => {
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  const seconds = String(date.getSeconds()).padStart(2, "0");
+  return `${hours}:${minutes}:${seconds}`;
+};
+
+export function appendField(
+  formData: FormData,
+  key: string,
+  value: string | number | boolean | File | null | undefined
+) {
+  if (value === null || value === undefined) {
+    throw new Error(`The field "${key}" cannot be null or undefined.`);
+  }
+
+  if (value instanceof File) {
+    formData.append(key, value);
+  } else {
+    formData.append(key, String(value));
+  }
+}

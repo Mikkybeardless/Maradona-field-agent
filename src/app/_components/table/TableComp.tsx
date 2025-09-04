@@ -52,18 +52,18 @@ export default function MuiTableComponent({
   };
 
   const handleSelectionChange = (newSelection: GridRowSelectionModel) => {
-    // Ensure the selection is always an array of GridRowId
-    const normalizedSelection: GridRowId[] = Array.isArray(newSelection)
-      ? (newSelection as GridRowId[])
-      : [newSelection as unknown as GridRowId];
+    // Convert Set to array of IDs
+    const normalizedSelection: GridRowId[] = Array.from(
+      newSelection as unknown as Set<GridRowId>
+    );
 
-    // setSelectedRowIds(normalizedSelection);
+    console.log("newSelection:", newSelection);
+    console.log("normalizedSelection:", normalizedSelection);
 
-    // Now this is always safe
+    // Get the full row objects using the IDs
     const selectedRowsData = rows.filter((row) =>
       normalizedSelection.includes(row.id)
     );
-    console.log("Selected Rows Data:", selectedRowsData);
 
     onSelect?.(selectedRowsData);
   };

@@ -1,20 +1,37 @@
 "use client";
 
+import { appendField } from "@/app/helper/helperFunction";
+import axios from "axios";
 import { Add } from "iconsax-react";
 import { useState } from "react";
+import { toast } from "react-toastify";
 
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: Record<string, string>) => void;
+  controlledData: {
+    name: string;
+    email: string;
+    phone: string;
+    location: string;
+  };
+  onSubmit?: (data: Record<string, string>) => void;
 }
 
-export const EditProfileModal = ({ isOpen, onClose, onSubmit }: ModalProps) => {
+export const EditProfileModal = ({
+  isOpen,
+  onClose,
+  onSubmit,
+  controlledData,
+}: ModalProps) => {
   const [formData, setFormData] = useState({
-    full_name: "",
-    email: "",
-    phone_no: "",
+    name: controlledData.name,
+    email: controlledData.email,
+    phone: controlledData.phone,
+    location: controlledData.location,
   });
+
+  const [updating, setUpdating] = useState<boolean>(false);
   if (!isOpen) return null;
 
   const handleBackgroundClick = (
@@ -25,12 +42,30 @@ export const EditProfileModal = ({ isOpen, onClose, onSubmit }: ModalProps) => {
     }
   };
 
+  const updateProfile = async (data: UpdateProfileDto) => {
+    setUpdating(true);
+    const formData = new FormData();
+    for (const [key, value] of Object.entries(data)) {
+      appendField(formData, key, value);
+    }
+    try {
+      const res = await axios.put("/api/auth/profile", formData);
+      console.log("Profile Updated: ", data);
+      if (res.status === 200) {
+        toast.success("Profile updated successfully");
+        setUpdating(false);
+      }
+    } catch (error) {
+      toast.error("Error updating profile");
+      console.error("Error updating profile:", error);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     // Handle form submission logic here
-
-    console.log("Profile updated:");
-    onSubmit(formData);
+    updateProfile(formData);
+    onSubmit?.(formData);
     onClose();
   };
 
@@ -69,26 +104,14 @@ export const EditProfileModal = ({ isOpen, onClose, onSubmit }: ModalProps) => {
               </label>
               <input
                 type="text"
-                id="full_name"
-                placeholder="First Name"
-                value={formData.full_name}
+                id="name"
+                placeholder="Full Name"
+                value={formData.name}
                 onChange={handleChange}
                 className="w-full px-4 text-sm py-2.5 border border-[#B5ABB3] rounded-lg focus:outline-none focus:ring-2 focus:ring-orange"
               />
             </div>
-            {/* <div className="space-y-1.5">
-              <label htmlFor="lastName" className="text-gray-800 font-medium">
-                Last Name
-              </label>
-              <input
-                type="text"
-                id="lastName"
-                placeholder="Last Name"
-                value={formData.lastName}
-                onChange={handleChange}
-                className="w-full px-4 text-sm py-2.5 border border-[#B5ABB3] rounded-lg focus:outline-none focus:ring-2 focus:ring-orange"
-              />
-            </div> */}
+
             <div className="space-y-1.5">
               <label htmlFor="email" className="text-gray-800 font-medium">
                 Email
@@ -102,19 +125,33 @@ export const EditProfileModal = ({ isOpen, onClose, onSubmit }: ModalProps) => {
                 className="w-full px-4 text-sm py-2.5 border border-[#B5ABB3] rounded-lg focus:outline-none focus:ring-2 focus:ring-orange"
               />
             </div>
-            {/* <div className="space-y-1.5">
+            <div className="space-y-1.5">
               <label htmlFor="phone_no" className="text-gray-800 font-medium">
-                Phone_no
+                Phone Number
               </label>
               <input
                 type="text"
                 id="phone_no"
                 placeholder="Phone"
-                value={formData.phone_no}
+                value={formData.phone}
                 onChange={handleChange}
                 className="w-full px-4 text-sm py-2.5 border border-[#B5ABB3] rounded-lg focus:outline-none focus:ring-2 focus:ring-orange"
               />
-            </div> */}
+            </div>
+
+            <div className="space-y-1.5">
+              <label htmlFor="address" className="text-gray-800 font-medium">
+                Address
+              </label>
+              <input
+                type="text"
+                id="location"
+                placeholder="Address"
+                value={formData.location}
+                onChange={handleChange}
+                className="w-full px-4 text-sm py-2.5 border border-[#B5ABB3] rounded-lg focus:outline-none focus:ring-2 focus:ring-orange"
+              />
+            </div>
           </section>
           <div className="flex items-center gap-3 mt-4 ml-auto w-fit">
             <button
@@ -125,12 +162,10 @@ export const EditProfileModal = ({ isOpen, onClose, onSubmit }: ModalProps) => {
             </button>
             <button
               type="submit"
-              disabled={
-                !formData.full_name || !formData.email || !formData.phone_no
-              }
+              disabled={!formData.name || !formData.email || !formData.phone}
               className="px-10 py-2.5 rounded-lg border-orange bg-orange text-white border focus:outline-none"
             >
-              Update
+              {updating ? "Updating..." : "Update"}
             </button>
           </div>
         </form>

@@ -6,7 +6,7 @@ import Link from "next/link";
 import house from "@/app/_assets/images/house.png";
 import Rating from "@/app/_assets/images/Ratings.png";
 import { RescheduleModal } from "@/app/_components/reschedule-modal/reschedule-modal";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ProductCarousel from "@/app/_components/ProductCarousel";
 import { TiLocationOutline } from "react-icons/ti";
 import { FaStar } from "react-icons/fa6";
@@ -20,31 +20,26 @@ import { FaCheck, FaTimes } from "react-icons/fa";
 import { RiErrorWarningLine } from "react-icons/ri";
 import { ApproveModal } from "@/app/_components/modals/approve-modal";
 import { DeclineModal } from "@/app/_components/modals/decline-modal";
+import { fetchFn } from "@/app/api/fetchFn";
+import InspectionScheduler from "@/app/_components/inspectionScheduler";
+import { toast } from "react-toastify";
+import inspectionService from "@/app/api/services/inspection.service";
 
 type Schedule = {
   date: string;
   time: string;
 };
 
-type Product = {
-  id: number;
-  title: string;
-  description: string;
-  location: string;
-  images: string[];
-  category: string;
-  condition: string;
-};
-
-export function PageDetailsClient({ product }: { product: Product }) {
+export function InspectionDetailsClient({ id }: { id: number }) {
   const [isModalOpen, setModalOpen] = useState<boolean>(false);
-  const [selectedSession, setSelectedSession] = useState<string | null>(null);
-  const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [BookModal, setBookModal] = useState<boolean>(false);
   const [contactModal, setContactModal] = useState(false);
   const [schedule, setShedule] = useState<Schedule>({ date: "", time: "" });
   const [approvedModal, setApprovedModal] = useState<boolean>(false);
   const [declinedModal, setDeclinedModal] = useState<boolean>(false);
+  const [inspectionDetails, setInspectionDetails] = useState<Inspection | null>(
+    null
+  );
   const items = [
     { title: "Bedrooms", text: "2 spacious bedrooms with built-in wardrobes." },
     {
@@ -73,59 +68,94 @@ export function PageDetailsClient({ product }: { product: Product }) {
     },
   ];
 
-  // const createBooking = async (inspectionData: InspectionData) => {
+  const date = new Date(schedule.date);
+  const dayNames = [
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+  ];
+  const dayName = dayNames[date.getDay()];
+
+  useEffect(() => {
+    // Fetch inspection details using the provided ID
+    const fetchInspectionDetails = async () => {
+      try {
+        const res = await fetchFn(`/api/inspections/${id}`);
+        if (res.status === 200) {
+          // Handle successful response
+          console.log("Fetched inspection details:", res.data.data);
+          setInspectionDetails(res.data.data);
+        }
+      } catch (error) {
+        console.error("Error fetching inspection details:", error);
+      }
+    };
+
+    fetchInspectionDetails();
+  }, [id]);
+
+  const createInspection = async () => {
+    console.log("Creating inspection with schedule:", schedule);
+    try {
+      const response = await inspectionService.createInspection(id, {
+        scheduled_at: `${schedule.date} ${schedule.time}`,
+      });
+      if (response.status === 200) {
+        toast.success(`Meeting scheduled successfully`);
+      }
+    } catch (error) {
+      toast.error("Failed to schedule meeting, please try again later");
+      console.error("Error scheduling meeting:", error);
+    }
+  };
+  // const submitInspectionResult = async (submitData: InspectionResultData) => {
+  //   if (!id) {
+  //     throw new Error("Inspection ID is required");
+  //   }
   //   try {
-  //     const res = await inspectionService.createInspection({
-  //       product_id: product.id,
-  //       field_agent_id: inspectionData.field_agent_id,
-  //       scheduled_at: inspectionData.scheduled_at,
+  //     const res = await inspectionService.submitResult(parseInt(id, 10), {
+  //       approval_status: submitData.approval_status,
+  //       condition: submitData.condition,
+  //       documents_in_order: submitData.documents_in_order,
+  //       notes: submitData.notes,
   //     });
-  //   } catch (error) {}
+
+  //     if (res.status === 200) {
+  //       toast.success("Inspection result submitted successfully");
+  //       setApprovedModal(false);
+  //       setDeclinedModal(false);
+  //     } else {
+  //       toast.error("Failed to submit inspection result. Please try again.");
+  //     }
+  //   } catch (error) {
+  //     console.error("Error submitting inspection result:", error);
+  //     toast.error("An unknown error occured. try again");
+  //   }
   // };
-  //   const submitInspectionResult = async (submitData: InspectionResultData) => {
-  //     if (!id) {
-  //       throw new Error("Inspection ID is required");
-  //     }
-  //     try {
-  //       const res = await inspectionService.submitResult(parseInt(id, 10), {
-  //         approval_status: submitData.approval_status,
-  //         condition: submitData.condition,
-  //         documents_in_order: submitData.documents_in_order,
-  //         notes: submitData.notes,
-  //       });
 
-  //       if (res.status === 200) {
-  //         toast.success("Inspection result submitted successfully");
-  //         setApprovedModal(false);
-  //         setDeclinedModal(false);
-  //       } else {
-  //         toast.error("Failed to submit inspection result. Please try again.");
-  //       }
-  //     } catch (error) {
-  //       console.error("Error submitting inspection result:", error);
-  //       toast.error("An unknown error occured. try again");
-  //     }
+  // const handleApprove = async (notes: string) => {
+  //   const submitData: InspectionResultData = {
+  //     approval_status: "approved",
+  //     condition: "matched",
+  //     documents_in_order: 1,
+  //     notes: notes || "Inspection approved. All documents are in order.",
   //   };
+  //   await submitInspectionResult(submitData);
+  // };
 
-  //   const handleApprove = async (notes: string) => {
-  //     const submitData: InspectionResultData = {
-  //       approval_status: "approved",
-  //       condition: "matched",
-  //       documents_in_order: 1,
-  //       notes: notes || "Inspection approved. All documents are in order.",
-  //     };
-  //     await submitInspectionResult(submitData);
+  // const handleDecline = async (notes: string) => {
+  //   const submitData: InspectionResultData = {
+  //     approval_status: "rejected",
+  //     condition: "mismatched",
+  //     documents_in_order: 0,
+  //     notes: notes || "Inspection declined. Documents are not in order.",
   //   };
-
-  //   const handleDecline = async (notes: string) => {
-  //     const submitData: InspectionResultData = {
-  //       approval_status: "rejected",
-  //       condition: "mismatched",
-  //       documents_in_order: 0,
-  //       notes: notes || "Inspection declined. Documents are not in order.",
-  //     };
-  //     await submitInspectionResult(submitData);
-  //   };
+  //   await submitInspectionResult(submitData);
+  // };
   // const rescheduleInspection = async (data: updateInspectionData) => {
   //   if (!selectedSession || !selectedTime) {
   //     toast.error("Please select a date and time for rescheduling.");
@@ -149,7 +179,7 @@ export function PageDetailsClient({ product }: { product: Product }) {
   //   }
   // };
 
-  console.log("Product Details:", product);
+  console.log("inspection Details:", id);
   return (
     <div className=" flex flex-col  gap-14">
       <RescheduleModal
@@ -159,15 +189,12 @@ export function PageDetailsClient({ product }: { product: Product }) {
       <BookingModal
         isOpen={BookModal}
         onClose={() => setBookModal(false)}
-        onConfirm={() =>
-          setShedule({
-            date: selectedSession || "",
-            time: selectedTime || "",
-          })
-        }
+        onConfirm={createInspection}
       />
       <SellerInfoModal
+        product={inspectionDetails?.product}
         isOpen={contactModal}
+        seller={inspectionDetails?.seller}
         onClose={() => setContactModal(false)}
       />
       <ApproveModal
@@ -208,7 +235,7 @@ export function PageDetailsClient({ product }: { product: Product }) {
             <div className="hidden md:flex items-center gap-5">
               <span className="">Status</span>
               <span className="bg-[#FFFAEB] flex gap-x-1 items-center text-orange px-5 rounded-lg py-3">
-                <GoDotFill /> Pending
+                <GoDotFill /> {inspectionDetails?.status}
               </span>
             </div>
 
@@ -220,18 +247,25 @@ export function PageDetailsClient({ product }: { product: Product }) {
               {/* Left */}
               <section className="w-full md:w-[50%] ">
                 <ProductCarousel
-                  images={[house.src, house.src, house.src, house.src]}
+                  images={
+                    inspectionDetails?.product.media || [
+                      house.src,
+                      house.src,
+                      house.src,
+                      house.src,
+                    ]
+                  }
                 />
               </section>
               {/* right */}
               <section className="w-full  md:w-[50%] ">
                 <header className="flex items-center gap-12 text-[#585858] text-sm mb-9">
                   <p>Request ID:</p>
-                  <p>1234DSFA</p>
+                  <p>{inspectionDetails?.id}</p>
                 </header>
                 <section className="space-y-5">
                   <p className="text-3xl text-[#040421] font-bold">
-                    2-Bedroom Duplex with Modern Amenities
+                    {inspectionDetails?.product.name}
                   </p>
                   <p className="text-[#040421] flex items-center gap-x-1">
                     <TiLocationOutline />
@@ -240,18 +274,21 @@ export function PageDetailsClient({ product }: { product: Product }) {
 
                   <div className="flex items-center gap-2">
                     <span className="text-[#175CD3] bg-[#D1E9FF] border border-[#175CD3] border-1 rounded-full px-3 py-1 flex items-center gap-1 text-sm font-medium">
-                      <LuHouse /> Houses
+                      {inspectionDetails?.product.type === "HOUSE" && (
+                        <>
+                          {" "}
+                          <LuHouse />
+                          {inspectionDetails?.product.type}
+                        </>
+                      )}
                     </span>
                     <span className="text-[#FD8133] bg-[#FFFAEB] border border-[#FD8133] border-1 rounded-full px-3 py-1 flex items-center gap-1 text-sm font-medium">
-                      <BsStars /> Brand New
+                      <BsStars /> {inspectionDetails?.product.condition}
                     </span>
                   </div>
                   <div className="space-y-2 mb-3">
                     <p className="text-sm text-[#040421]">
-                      A stunning 2-bedroom duplex located in the heart of the
-                      city. This property offers a perfect blend of modern
-                      design and comfortable living, ideal for families or
-                      professionals looking for a convenient and stylish home.
+                      {inspectionDetails?.product.description}
                     </p>
                     <div className="flex gap-x-3 items-center">
                       {Array.from({ length: 5 }, (_, i) => {
@@ -272,8 +309,8 @@ export function PageDetailsClient({ product }: { product: Product }) {
                           <div className="flex items-center gap-2 mb-3">
                             <RiErrorWarningLine size={24} />
                             <p className="text-[#585858]">
-                              You have scheduled an inspection for{" "}
-                              {schedule.date} at {schedule.time}
+                              You have scheduled an inspection for {dayName} at{" "}
+                              {schedule.time}
                             </p>
                           </div>
 
@@ -302,66 +339,13 @@ export function PageDetailsClient({ product }: { product: Product }) {
                       </div>
                     )}
                   </div>
-                  <div className="bg-white p-4 rounded-lg space-y-4 shadow-md">
-                    <h5 className="font-medium text-lg mb-2">
-                      Open days for inspection
-                    </h5>
-                    <div>
-                      <p>Book session for you to go inspect</p>
-                      <div className="flex items-center gap-x-10 overflow-x-auto mt-4">
-                        {["Sun", "Mon", "Tues", "Wed", "Thur", "Fri"].map(
-                          (item, i) => (
-                            <button
-                              key={i}
-                              onClick={() => setSelectedSession(item)}
-                              className={`${
-                                selectedSession === item &&
-                                "bg-[#E8E8F4] border-[#4345AA] border"
-                              } rounded-lg p-2 mb-2 shadow-md flex flex-col items-center gap-1 `}
-                            >
-                              <span className="font-semibold">{item}</span>
-                              <span className="text-sm text-[#585858] font-medium">
-                                {` 0${i + 1} Nov`}
-                              </span>
-                            </button>
-                          )
-                        )}
-                      </div>
-                    </div>
-                    <div className="space-y-1.5 mt-2">
-                      <p>Choose Time</p>
-                      <hr className="mb-4" />
-                      <div className="flex items-center gap-x-7 overflow-x-auto mt-4">
-                        {[
-                          "1:00PM",
-                          "2:00PM",
-                          "3:00PM",
-                          "4:00PM",
-                          "5:00PM",
-                          "6:00PM",
-                        ].map((item, i) => (
-                          <button
-                            key={i}
-                            onClick={() => setSelectedTime(item)}
-                            className={`${
-                              selectedTime === item &&
-                              "bg-[#E8E8F4] border-[#4345AA] border"
-                            } rounded-lg p-2 mb-2 shadow-md  items-center gap-1 `}
-                          >
-                            <span className="text-sm text-[#585858] flex font-medium">
-                              {item}
-                            </span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => setBookModal(true)}
-                      className="w-full py-2 bg-orange rounded-xl hover:bg-inherit hover:border hover:border-orange text-white hover:text-orange"
-                    >
-                      Schedule Inspection
-                    </button>
-                  </div>
+
+                  <InspectionScheduler
+                    onSchedule={(dateTime) => {
+                      setBookModal(true);
+                      setShedule(dateTime);
+                    }}
+                  />
                   {/* key features  */}
                   <div>
                     <p className="text-sm text-[#585858]">Key Features:</p>
@@ -395,7 +379,7 @@ export function PageDetailsClient({ product }: { product: Product }) {
                     />
                     <div className="space-y-2">
                       <p className="font-medium text-2xl text-[#040421]">
-                        Rosemary Sunday
+                        {inspectionDetails?.seller.name}
                       </p>
                       <p className="text-[#585858] font-medium">
                         6.4K <span>items sold</span>{" "}
@@ -404,7 +388,11 @@ export function PageDetailsClient({ product }: { product: Product }) {
                         <div className="flex items-center gap-2">
                           <Calendar2 size={24} color="#E65800" />
                           <p className="text-[#585858] font-medium">
-                            Joined Aug, 2023
+                            Joined{" "}
+                            {
+                              inspectionDetails?.seller.seller_profile
+                                .created_at
+                            }
                           </p>
                         </div>
                         <div className="flex items-center gap-2">

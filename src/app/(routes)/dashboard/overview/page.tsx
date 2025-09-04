@@ -1,6 +1,6 @@
 "use client";
 
-import { Export } from "iconsax-react";
+import { Export, Eye } from "iconsax-react";
 import { DateSelect } from "../../../_components/common/dateSelect";
 import Link from "next/link";
 import { HiOutlinePencil } from "react-icons/hi";
@@ -18,11 +18,14 @@ import {
   bidsColumns,
   purchaseEnqColumns,
 } from "@/app/_components/table/colums";
-import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
 import { RootState } from "@/app/redux/store";
 import { fetchFn } from "@/app/api/fetchFn";
 import { ExportModal } from "@/app/_components/modals/exportModal";
+import DynamicNav from "@/app/_components/DynamicTab";
+import { MetricCard } from "@/app/_components/analytics/metricCard";
+import { DollarSign, Target, Users } from "lucide-react";
+import { SquareLoader } from "@/app/_components/common/squareLoader";
 
 type IFilter = {
   type: string;
@@ -30,13 +33,14 @@ type IFilter = {
   date: Dayjs | null;
 };
 
+type TabState = "purchase-enquiries" | "bids";
+
 interface ISelectedData {
   purchaseEnqs: Record<string, string | number>[];
   bids: Record<string, string | number>[];
 }
 
 export default function Page() {
-  const router = useRouter();
   const { user } = useSelector((state: RootState) => state.auth);
   const [isExporting, setIsExporting] = useState({
     purchaseEnq: false,
@@ -46,6 +50,7 @@ export default function Page() {
     purchaseEnqs: [],
     bids: [],
   });
+  const [tab, setTab] = useState<TabState>("purchase-enquiries");
 
   // purchase enquiry
   const [purchaseEnqData, setPurchaseEnqData] = useState({
@@ -84,6 +89,87 @@ export default function Page() {
   });
   const debouncedSearchBidsQuery = useDebounce(searchBidsQuery);
   const formattedBidsDate = formatDayJs(bidsFilters.date);
+  const initialStats: Stats = {
+    inspections: {
+      total_inspections: 0,
+      completed_inspections: 0,
+      pending_inspections: 0,
+      purchase_inspections: {
+        total: 0,
+        completed: 0,
+        pending: 0,
+      },
+      regular_inspections: {
+        total: 0,
+        completed: 0,
+        pending: 0,
+      },
+      completion_rate: 0,
+      period: {
+        start: "",
+        end: "",
+        description: "",
+      },
+    },
+    conversions: {
+      overall_conversion: {
+        total_assignments: 0,
+        total_sold: 0,
+        conversion_rate: 0,
+      },
+      purchase_enquiries_conversion: {
+        total_assignments: 0,
+        total_sold: 0,
+        conversion_rate: 0,
+      },
+      auction_bids_conversion: {
+        total_assignments: 0,
+        total_sold: 0,
+        conversion_rate: 0,
+      },
+      period: {
+        start: "",
+        end: "",
+        description: "",
+      },
+    },
+    performance: {
+      data: [],
+      period: {
+        start: "",
+        end: "",
+        description: "",
+      },
+    },
+    bids: {
+      total_assigned: 0,
+      sold_count: 0,
+      pending_count: 0,
+      rejected_count: 0,
+      total_revenue: "",
+      conversion_rate: 0,
+      period: {
+        start: "",
+        end: "",
+        description: "",
+      },
+    },
+    enquiries: {
+      closed_count: 0,
+      conversion_rate: 0,
+      pending_count: 0,
+      period: {
+        start: "",
+        end: "",
+        description: "",
+      },
+      sold_count: 0,
+      total_assigned: 0,
+      total_revenue: "",
+    },
+  };
+  const [stats, setStats] = useState<Stats>(initialStats);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Fetch purchase enquiry data
   const fetchPurchaseEnqData = useCallback(async () => {
@@ -144,7 +230,6 @@ export default function Page() {
     const params = buildCleanParams(paramsObj);
     const response = await fetchFn(`/api/bids`, params.toString());
     const data = response.data.data;
-    console.log("Assigned bids data:", data);
     setBidsData((prev) => ({
       ...prev,
       rows: data.data,
@@ -166,6 +251,21 @@ export default function Page() {
     fetchAssignedBidsData();
   }, [fetchAssignedBidsData]);
 
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetchFn(`/api/analytics`);
+        setStats(response.data.data);
+      } catch (error) {
+        console.error("Error fetching stats:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchStats();
+  }, []);
+
   return (
     <section className="flex bg-white mt-5 flex-col gap-4 py-10">
       {/* modals */}
@@ -185,10 +285,10 @@ export default function Page() {
       />
 
       <header className=" px-2 md:px-6 py-4 space-y-6">
-        <div className="flex  justify-between items-end bg-[#FFEFE6] border border-[#FEB68A] rounded-lg px-5 py-4">
+        {/* <div className="flex  justify-between items-end bg-[#FFEFE6] border border-[#FEB68A] rounded-lg px-5 py-4">
           <button className="hover:underline">Add Payment Info</button>
           <button>X</button>
-        </div>
+        </div> */}
 
         <div className="flex items-center bg-white justify-between">
           <div className="space-y-2.5">
@@ -230,230 +330,277 @@ export default function Page() {
       </header>
       <section className="px-6 py-4 bg-[#F0F0F0] space-y-6">
         <h6 className="text-black font-medium mb-5"> Statistics Overview</h6>
-        <div className="w-full px-2 md:px-5 py-7 bg-white rounded-xl md:rounded-lg">
-          <div className="w-full  flex flex-col md:flex-row md:items-center justify-evenly *:px-12 *:py-4">
-            <div className="space-y-3  border-b md:border-b-0 md:border-r border-light-grey">
-              <h6 className="text-sm text-[#585858]">
-                Total Inspections Completed
-              </h6>
-              <p className="text-lg font-bold">230</p>
-            </div>
-            <div className="space-y-3    border-b md:border-b-0 md:border-r border-light-grey">
-              <h6 className="text-sm text-[#585858]">Pending Inspections</h6>
-              <p className="text-lg font-bold">53</p>
-            </div>
-            <div className="space-y-3  border-b md:border-b-0 md:border-r border-light-grey">
-              <h6 className="text-sm text-[#585858]">Upcoming Inspections</h6>
-              <p className="text-lg font-bold">530</p>
-            </div>
-            <div className="space-y-3">
-              <h6 className="text-sm text-[#585858]">Recent Verifications</h6>
-              <p className="text-lg font-bold">1,200</p>
-            </div>
+        {isLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <SquareLoader key={index} />
+            ))}
           </div>
-        </div>
-      </section>
-      {/* pruchase enquiries */}
-      <section className="px-2 mb-10 border border-gray-300 rounded-lg shadow-md  md:px-6 py-4 space-y-6">
-        <div className="flex items-center justify-between">
-          <h6 className="text-black font-medium md:text-xl mb-5">
-            Purchase Inspection Requests
-          </h6>
-          <button
-            onClick={() =>
-              setIsExporting((prev) => ({ ...prev, purchaseEnq: true }))
-            }
-            className="px-4 py-1 md:px-6 md:py-2 flex items-center gap-1 bg-orange text-white rounded-lg hover:bg-orange-600"
-          >
-            <Export size="20" /> Export
-          </button>
-        </div>
-
-        {/* purchaseFilters & Search Bar */}
-        <div className="">
-          <FilterGroup
-            filters={purchaseFilters}
-            onChange={(updated) => {
-              setPurchaseFilters((prev) => ({ ...prev, ...updated }));
-            }}
-            selects={[
-              {
-                name: "type",
-                placeholder: "Category",
-                options: [
-                  { label: "All", value: "" },
-                  { label: "House", value: "HOUSE" },
-                  { label: "Cars", value: "CAR" },
-                  { label: "Land", value: "LAND" },
-                ],
-              },
-            ]}
-            extraFilters={
-              <>
-                <StatusSelect
-                  options={[
-                    { label: "All", value: "" },
-                    { label: "Sold", value: "sold" },
-                    { label: "Scheduled", value: "scheduled" },
-                    { label: "Assigned", value: "assigned" },
-                  ]}
-                  onChange={(value) => {
-                    setPurchaseFilters((prev) => ({ ...prev, status: value }));
-                  }}
-                  value={purchaseFilters.status}
-                />
-                <DateSelect
-                  onChange={(date) => {
-                    setPurchaseFilters((prev) => ({ ...prev, date }));
-                  }}
-                  value={purchaseFilters.date}
-                />
-              </>
-            }
-            searchNode={
-              <TableSearchInput
-                searchQuery={searchPurchaseQuery}
-                setSearchQuery={setSearchPurchaseQuery}
-                placeholder="Search enquiries"
-              />
-            }
-          />
-        </div>
-
-        <section
-          id="purchase-enquiry-table"
-          className="mt-3 w-full bg-white overflow-x-auto rounded-md custom-scrollbar"
-        >
-          <div className="min-w-[900px]">
-            <MuiTableComponent
-              columns={purchaseEnqColumns}
-              rows={purchaseEnqData.rows}
-              onRowClick={() => {
-                router.push("/dashboard/inspection-details");
-              }}
-              loading={purchaseEnqData.loading}
-              currentPage={purchaseEnqData.pagination.page}
-              totalRowCount={purchaseEnqData.totalRowCount}
-              onPageChange={(model) => {
-                setPurchaseEnqData((prev) => ({
-                  ...prev,
-                  pagination: {
-                    page: model.page,
-                    pageSize: model.pageSize,
-                  },
-                }));
-              }}
-              showCheckbox={true}
-              onSelect={(selections) => {
-                setSelectedData((prev) => ({
-                  ...prev,
-                  purchaseEnqs: selections,
-                }));
-              }}
-              rowHeight={60}
-              pageSize={purchaseEnqData.pagination.pageSize}
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <MetricCard
+              title="Overall Conversion Rate"
+              value={`${stats.conversions.overall_conversion.conversion_rate}%`}
+              subtitle={`${stats.conversions.overall_conversion.total_sold}/${stats.conversions.overall_conversion.total_assignments} assignments`}
+              icon={Target}
+              color="text-blue-600"
+              trend={
+                stats.conversions.auction_bids_conversion.conversion_rate +
+                stats.conversions.purchase_enquiries_conversion
+                  .conversion_rate /
+                  2 -
+                70
+              }
+            />
+            <MetricCard
+              title="Total Revenue"
+              value={
+                (Number(stats.bids.total_revenue) +
+                  Number(stats.enquiries.total_revenue)) /
+                1000000
+              }
+              subtitle="Combined revenue"
+              icon={DollarSign}
+              color="text-green-600"
+              trend={12}
+              isRevenue={true}
+            />
+            <MetricCard
+              title="Total Assignments"
+              value={stats.conversions.overall_conversion.total_assignments}
+              subtitle="This period"
+              icon={Users}
+              color="text-purple-600"
+              trend={8}
+            />
+            <MetricCard
+              title="Inspection Rate"
+              value={`${stats.inspections.completion_rate}%`}
+              subtitle={`${stats.inspections.completed_inspections}/${stats.inspections.total_inspections} completed`}
+              icon={Eye}
+              color="text-orange-600"
+              trend={-2}
             />
           </div>
-        </section>
+        )}
       </section>
+      <div className="my-4 w-[300px]">
+        <DynamicNav
+          states={[
+            { state: "purchase-enquiries", label: "Purchase Enquiries", id: 1 },
+            { state: "bids", label: "Bids", id: 2 },
+          ]}
+          onStateChange={(val) => setTab(val)}
+          initialState={tab}
+        />
+      </div>
+
+      {tab === "purchase-enquiries" ? (
+        <section className="px-2 mb-10 border border-gray-300 rounded-lg shadow-md  md:px-6 py-4 space-y-6">
+          <div className="flex items-center justify-between">
+            <h6 className="text-black font-medium md:text-xl mb-5">
+              Assigned Purchase Enquiries
+            </h6>
+            <button
+              onClick={() =>
+                setIsExporting((prev) => ({ ...prev, purchaseEnq: true }))
+              }
+              className="px-4 py-1 md:px-6 md:py-2 flex items-center gap-1 bg-orange text-white rounded-lg hover:bg-orange-600"
+            >
+              <Export size="20" /> Export
+            </button>
+          </div>
+
+          {/* purchaseFilters & Search Bar */}
+          <div className="">
+            <FilterGroup
+              filters={purchaseFilters}
+              onChange={(updated) => {
+                setPurchaseFilters((prev) => ({ ...prev, ...updated }));
+              }}
+              selects={[
+                {
+                  name: "type",
+                  placeholder: "Category",
+                  options: [
+                    { label: "All", value: "" },
+                    { label: "House", value: "HOUSE" },
+                    { label: "Cars", value: "CAR" },
+                    { label: "Land", value: "LAND" },
+                  ],
+                },
+              ]}
+              extraFilters={
+                <>
+                  <StatusSelect
+                    options={[
+                      { label: "All", value: "" },
+                      { label: "Sold", value: "sold" },
+                      { label: "Scheduled", value: "scheduled" },
+                      { label: "Assigned", value: "assigned" },
+                    ]}
+                    onChange={(value) => {
+                      setPurchaseFilters((prev) => ({
+                        ...prev,
+                        status: value,
+                      }));
+                    }}
+                    value={purchaseFilters.status}
+                  />
+                  <DateSelect
+                    onChange={(date) => {
+                      setPurchaseFilters((prev) => ({ ...prev, date }));
+                    }}
+                    value={purchaseFilters.date}
+                  />
+                </>
+              }
+              searchNode={
+                <TableSearchInput
+                  searchQuery={searchPurchaseQuery}
+                  setSearchQuery={setSearchPurchaseQuery}
+                  placeholder="Search enquiries"
+                />
+              }
+            />
+          </div>
+
+          <section
+            id="purchase-enquiry-table"
+            className="mt-3 w-full bg-white overflow-x-auto rounded-md custom-scrollbar"
+          >
+            <div className="min-w-[900px]">
+              <MuiTableComponent
+                columns={purchaseEnqColumns}
+                rows={purchaseEnqData.rows}
+                // onRowClick={(row) => {
+                //   router.push(`/dashboard/purchase-enq/${row.id}`);
+                // }}
+                loading={purchaseEnqData.loading}
+                currentPage={purchaseEnqData.pagination.page}
+                totalRowCount={purchaseEnqData.totalRowCount}
+                onPageChange={(model) => {
+                  setPurchaseEnqData((prev) => ({
+                    ...prev,
+                    pagination: {
+                      page: model.page,
+                      pageSize: model.pageSize,
+                    },
+                  }));
+                }}
+                showCheckbox={true}
+                onSelect={(selections) => {
+                  setSelectedData((prev) => ({
+                    ...prev,
+                    purchaseEnqs: selections,
+                  }));
+                }}
+                rowHeight={60}
+                pageSize={purchaseEnqData.pagination.pageSize}
+              />
+            </div>
+          </section>
+        </section>
+      ) : (
+        <section className="px-2 border border-gray-300 rounded-lg shadow-md  md:px-6 py-4 space-y-6">
+          <div className="flex items-center justify-between">
+            <h6 className="text-black font-medium md:text-xl mb-5">
+              Assigned Bids
+            </h6>
+            <button
+              onClick={() =>
+                setIsExporting((prev) => ({ ...prev, bids: true }))
+              }
+              className="px-4 py-1 md:px-6 md:py-2 flex items-center gap-1 bg-orange text-white rounded-lg hover:bg-orange-600"
+            >
+              <Export size="20" /> Export
+            </button>
+          </div>
+
+          {/* Filters & Search Bar */}
+          <div className="">
+            <FilterGroup
+              filters={bidsFilters}
+              onChange={(updated) => {
+                setBidsFilters((prev) => ({ ...prev, ...updated }));
+              }}
+              selects={[
+                {
+                  name: "type",
+                  placeholder: "Category",
+                  options: [
+                    { label: "All", value: "" },
+                    { label: "House", value: "HOUSE" },
+                    { label: "Cars", value: "CAR" },
+                    { label: "Land", value: "LAND" },
+                  ],
+                },
+              ]}
+              extraFilters={
+                <>
+                  <StatusSelect
+                    options={[
+                      { label: "All", value: "" },
+                      { label: "Sold", value: "sold" },
+                      { label: "Scheduled", value: "scheduled" },
+                      { label: "Assigned", value: "assigned" },
+                    ]}
+                    onChange={(value) => {
+                      setBidsFilters((prev) => ({ ...prev, status: value }));
+                    }}
+                    value={bidsFilters.status}
+                  />
+                  <DateSelect
+                    onChange={(date) => {
+                      setBidsFilters((prev) => ({ ...prev, date }));
+                    }}
+                    value={bidsFilters.date}
+                  />
+                </>
+              }
+              searchNode={
+                <TableSearchInput
+                  searchQuery={searchBidsQuery}
+                  setSearchQuery={setSearchBidsQuery}
+                  placeholder="Search orders"
+                />
+              }
+            />
+          </div>
+
+          <section
+            id="assigned-bids-table"
+            className="mt-3 w-full bg-white overflow-x-auto rounded-md custom-scrollbar"
+          >
+            <div className="min-w-[900px]">
+              <MuiTableComponent
+                columns={bidsColumns}
+                rows={bidsData.rows}
+                loading={bidsData.loading}
+                currentPage={bidsData.pagination.page}
+                totalRowCount={bidsData.totalRowCount}
+                onPageChange={(model) => {
+                  setBidsData((prev) => ({
+                    ...prev,
+                    pagination: {
+                      page: model.page,
+                      pageSize: model.pageSize,
+                    },
+                  }));
+                }}
+                showCheckbox={true}
+                onSelect={(selections) => {
+                  setSelectedData((prev) => ({ ...prev, bids: selections }));
+                }}
+                rowHeight={60}
+                pageSize={bidsData.pagination.pageSize}
+              />
+            </div>
+          </section>
+        </section>
+      )}
+
       {/* Assigned auction bids */}
-      <section className="px-2 border border-gray-300 rounded-lg shadow-md  md:px-6 py-4 space-y-6">
-        <div className="flex items-center justify-between">
-          <h6 className="text-black font-medium md:text-xl mb-5">
-            Assigned Auction Requests
-          </h6>
-          <button
-            onClick={() => setIsExporting((prev) => ({ ...prev, bids: true }))}
-            className="px-4 py-1 md:px-6 md:py-2 flex items-center gap-1 bg-orange text-white rounded-lg hover:bg-orange-600"
-          >
-            <Export size="20" /> Export
-          </button>
-        </div>
-
-        {/* Filters & Search Bar */}
-        <div className="">
-          <FilterGroup
-            filters={bidsFilters}
-            onChange={(updated) => {
-              setBidsFilters((prev) => ({ ...prev, ...updated }));
-            }}
-            selects={[
-              {
-                name: "type",
-                placeholder: "Category",
-                options: [
-                  { label: "All", value: "" },
-                  { label: "House", value: "HOUSE" },
-                  { label: "Cars", value: "CAR" },
-                  { label: "Land", value: "LAND" },
-                ],
-              },
-            ]}
-            extraFilters={
-              <>
-                <StatusSelect
-                  options={[
-                    { label: "All", value: "" },
-                    { label: "Sold", value: "sold" },
-                    { label: "Scheduled", value: "scheduled" },
-                    { label: "Assigned", value: "assigned" },
-                  ]}
-                  onChange={(value) => {
-                    setBidsFilters((prev) => ({ ...prev, status: value }));
-                  }}
-                  value={bidsFilters.status}
-                />
-                <DateSelect
-                  onChange={(date) => {
-                    setBidsFilters((prev) => ({ ...prev, date }));
-                  }}
-                  value={bidsFilters.date}
-                />
-              </>
-            }
-            searchNode={
-              <TableSearchInput
-                searchQuery={searchBidsQuery}
-                setSearchQuery={setSearchBidsQuery}
-                placeholder="Search orders"
-              />
-            }
-          />
-        </div>
-
-        <section
-          id="assigned-bids-table"
-          className="mt-3 w-full bg-white overflow-x-auto rounded-md custom-scrollbar"
-        >
-          <div className="min-w-[900px]">
-            <MuiTableComponent
-              columns={bidsColumns}
-              rows={bidsData.rows}
-              onRowClick={() => {
-                router.push("/dashboard/bid-details");
-              }}
-              loading={bidsData.loading}
-              currentPage={bidsData.pagination.page}
-              totalRowCount={bidsData.totalRowCount}
-              onPageChange={(model) => {
-                setBidsData((prev) => ({
-                  ...prev,
-                  pagination: {
-                    page: model.page,
-                    pageSize: model.pageSize,
-                  },
-                }));
-              }}
-              showCheckbox={true}
-              onSelect={(selections) => {
-                setSelectedData((prev) => ({ ...prev, bids: selections }));
-              }}
-              rowHeight={60}
-              pageSize={bidsData.pagination.pageSize}
-            />
-          </div>
-        </section>
-      </section>
     </section>
   );
 }

@@ -1,4 +1,4 @@
-import { InspectionDetailsClient } from "../inspectionDetailsClient";
+import { PurchaseEnqDetailsClient } from "../purchaseEnqDetailsClient";
 
 export default async function InspectionPage({
   params,
@@ -7,5 +7,5 @@ export default async function InspectionPage({
 }) {
   const id = params.id;
 
-  return <InspectionDetailsClient id={id} />;
+  return <PurchaseEnqDetailsClient id={id} />;
 }

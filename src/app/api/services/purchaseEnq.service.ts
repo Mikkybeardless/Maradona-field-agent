@@ -10,11 +10,12 @@ interface CompletedData {
 const purchaseEnqService = {
   getEnquiries: (params?: Record<string, string | number>) =>
     apiClient.get("agent/purchase-inspection-requests", { params }),
-  getEnquiry: (id: number) => apiClient.get(`/agent/purchase-enquiry/${id}`),
-  scheduleMeeting: (id: string, data: ScheduleData) =>
+  getEnquiry: (id: number) =>
+    apiClient.get(`/agent/purchase-inspection-requests/${id}`),
+  scheduleMeeting: (id: number, data: ScheduleData) =>
     apiClient.post(`/agent/purchase-inspection-requests/${id}/schedule`, data),
-  updateCompleted: (id: string, data: CompletedData) =>
-    apiClient.put(`/agent/purchase-inspection-requests/${id}/complete`, data),
+  updateCompleted: (id: number, data: CompletedData) =>
+    apiClient.post(`/agent/purchase-inspection-requests/${id}/complete`, data),
   deleteEnquiry: (id: number) =>
     apiClient.delete(`/agent/purchase-enquiry/${id}`),
 };

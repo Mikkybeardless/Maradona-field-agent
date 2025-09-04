@@ -1,13 +1,16 @@
 import apiClient from "../apiClient.server";
+interface ScheduleData {
+  scheduled_at: string;
+}
 
 const bidService = {
   getBids: (params?: Record<string, string>) =>
     apiClient.get("/agent/auction-bids", { params }),
   getBid: (id: number) => apiClient.get(`/agent/bids/${id}`),
-  createBid: (data: Record<string, string>) =>
-    apiClient.post("/agent/auction-bids", data),
+  scheduleMeeting: (id: number, data: ScheduleData) =>
+    apiClient.post(`/agent/purchase-inspection-requests/${id}/schedule`, data),
   updateBidStatus: (id: number, data: { status: string }) =>
-    apiClient.put(`/agent/auction-bids/${id}/update-status`, data),
+    apiClient.post(`/agent/auction-bids/${id}/update-status`, data),
   deleteBid: (id: number) => apiClient.delete(`/agent/auction-bids/${id}`),
 };
 
