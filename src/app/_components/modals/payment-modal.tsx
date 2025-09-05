@@ -1,13 +1,27 @@
 "use client";
 
 import { Add } from "iconsax-react";
+import { useState } from "react";
 
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
+  bank_name: string;
+  bank_account_number: string;
+  onChange: (field: string, value: string) => void;
 }
 
-export const EditPaymentModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
+export const EditPaymentModal: React.FC<ModalProps> = ({
+  isOpen,
+  onClose,
+  bank_name,
+  bank_account_number,
+  onChange,
+}) => {
+  const [accountDetails, setAccountDetails] = useState({
+    bank_name,
+    bank_account_number,
+  });
   if (!isOpen) return null;
 
   const handleBackgroundClick = (
@@ -16,6 +30,12 @@ export const EditPaymentModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
     if (e.target === e.currentTarget) {
       onClose();
     }
+  };
+
+  const handleUpdate = () => {
+    onChange("bank_name", accountDetails.bank_name);
+    onChange("bank_account_number", accountDetails.bank_account_number);
+    onClose();
   };
 
   return (
@@ -45,8 +65,14 @@ export const EditPaymentModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
               type="text"
               id="bank"
               placeholder="Enter name of bank"
-              value="Rosemary"
+              value={accountDetails.bank_name}
               className="w-full px-4 text-sm py-2.5 border border-[#B5ABB3] rounded-lg focus:outline-none focus:ring-2 focus:ring-orange"
+              onChange={(e) =>
+                setAccountDetails((prev) => ({
+                  ...prev,
+                  bank_name: e.target.value,
+                }))
+              }
             />
           </div>
           <div className="space-y-1.5">
@@ -57,20 +83,32 @@ export const EditPaymentModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
               type="text"
               id="accNumber"
               placeholder="Enter account number"
-              value="Sunday"
+              value={accountDetails.bank_account_number}
               className="w-full px-4 text-sm py-2.5 border border-[#B5ABB3] rounded-lg focus:outline-none focus:ring-2 focus:ring-orange"
+              onChange={(e) =>
+                setAccountDetails((prev) => ({
+                  ...prev,
+                  bank_account_number: e.target.value,
+                }))
+              }
             />
           </div>
         </section>
         <div className="flex items-center gap-3 ml-auto w-fit">
           <button
-            onClick={onClose}
+            onClick={() => {
+              setAccountDetails({
+                bank_name: bank_name,
+                bank_account_number: bank_account_number,
+              });
+              onClose();
+            }}
             className="px-10 py-2.5 rounded-lg border-orange text-orange border focus:outline-none"
           >
             Cancel
           </button>
           <button
-            onClick={onClose}
+            onClick={handleUpdate}
             className="px-10 py-2.5 rounded-lg border-orange bg-orange text-white border focus:outline-none"
           >
             Update

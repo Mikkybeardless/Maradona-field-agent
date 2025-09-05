@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 // import LogoutIcon from "@/app/_assets/icons/log-out.svg";
-import { FaPhoneAlt, FaStar, FaTimes } from "react-icons/fa";
+import { FaStar, FaTimes } from "react-icons/fa";
 import { MdEmail } from "react-icons/md";
 import { LuHouse } from "react-icons/lu";
 import { BsStars } from "react-icons/bs";
@@ -62,10 +62,10 @@ export const SellerInfoModal: React.FC<ModalProps> = ({
           </div>
 
           <div>
-            <span className="flex items-center gap-1 text-[#585858] text-sm">
+            {/* <span className="flex items-center gap-1 text-[#585858] text-sm">
               <FaPhoneAlt className="text-[#FD8133]" />{" "}
               <span>{seller?.seller_profile.phone}</span>
-            </span>
+            </span> */}
 
             <span className="flex text-[#585858] items-center gap-1 text-sm font-medium ">
               <MdEmail className="text-[#FD8133]" />{" "}

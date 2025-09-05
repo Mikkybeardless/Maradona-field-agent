@@ -53,12 +53,8 @@ export default function MuiTableComponent({
 
   const handleSelectionChange = (newSelection: GridRowSelectionModel) => {
     // Convert Set to array of IDs
-    const normalizedSelection: GridRowId[] = Array.from(
-      newSelection as unknown as Set<GridRowId>
-    );
-
-    console.log("newSelection:", newSelection);
-    console.log("normalizedSelection:", normalizedSelection);
+    const idsSet = newSelection.ids as Set<GridRowId>;
+    const normalizedSelection: GridRowId[] = Array.from(idsSet);
 
     // Get the full row objects using the IDs
     const selectedRowsData = rows.filter((row) =>

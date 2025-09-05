@@ -3,10 +3,12 @@ import { toast } from "react-toastify";
 
 interface InspectionSchedulerProps {
   onSchedule: (dateTime: { date: string; time: string }) => void;
+  isCreating?: boolean;
 }
 
 export default function InspectionScheduler({
   onSchedule,
+  isCreating,
 }: InspectionSchedulerProps) {
   const [selectedSession, setSelectedSession] = useState<number | null>(null);
   const [selectedTime, setSelectedTime] = useState<number | null>(null);
@@ -109,7 +111,7 @@ export default function InspectionScheduler({
           onClick={handleScheduleInspection}
           className="w-full py-2 bg-orange rounded-xl hover:bg-inherit hover:border hover:border-orange text-white hover:text-orange transition-colors"
         >
-          Schedule Inspection
+          {isCreating ? "Scheduling..." : "Schedule Inspection"}
         </button>
       </div>
     </div>

@@ -3,7 +3,6 @@
 import { ArrowRight2, Calendar2, Clock, Location } from "iconsax-react";
 import Image from "next/image";
 import Link from "next/link";
-import house from "@/app/_assets/images/house.png";
 import Rating from "@/app/_assets/images/Ratings.png";
 import { RescheduleModal } from "@/app/_components/reschedule-modal/reschedule-modal";
 import { useEffect, useState } from "react";
@@ -14,7 +13,6 @@ import { GoDotFill } from "react-icons/go";
 import { ProgressUI } from "@/app/_components/common/progressBar";
 import { BsStars } from "react-icons/bs";
 import { LuHouse } from "react-icons/lu";
-import { BookingModal } from "@/app/_components/modals/booking-modal";
 import { SellerInfoModal } from "@/app/_components/modals/sellerInfo-modal";
 import { FaCheck, FaTimes } from "react-icons/fa";
 import { RiErrorWarningLine } from "react-icons/ri";
@@ -23,7 +21,8 @@ import { DeclineModal } from "@/app/_components/modals/decline-modal";
 import { fetchFn } from "@/app/api/fetchFn";
 import InspectionScheduler from "@/app/_components/inspectionScheduler";
 import { toast } from "react-toastify";
-import inspectionService from "@/app/api/services/inspection.service";
+import { KeyFeatures } from "@/app/_components/products/keyFeature";
+import axios from "axios";
 
 type Schedule = {
   date: string;
@@ -32,41 +31,14 @@ type Schedule = {
 
 export function InspectionDetailsClient({ id }: { id: number }) {
   const [isModalOpen, setModalOpen] = useState<boolean>(false);
-  const [BookModal, setBookModal] = useState<boolean>(false);
   const [contactModal, setContactModal] = useState(false);
-  const [schedule, setShedule] = useState<Schedule>({ date: "", time: "" });
+  const [schedule, setSchedule] = useState<Schedule>({ date: "", time: "" });
   const [approvedModal, setApprovedModal] = useState<boolean>(false);
   const [declinedModal, setDeclinedModal] = useState<boolean>(false);
   const [inspectionDetails, setInspectionDetails] = useState<Inspection | null>(
     null
   );
-  const items = [
-    { title: "Bedrooms", text: "2 spacious bedrooms with built-in wardrobes." },
-    {
-      title: "Bathrooms",
-      text: "2.5 bathrooms, including an ensuite in the master bedroom.",
-    },
-    {
-      title: "Living Area",
-      text: "Open-plan living and dining area with high ceilings and plenty of natural light.",
-    },
-    {
-      title: "Kitchen",
-      text: "Fully equipped modern kitchen with stainless steel appliances, granite countertops, and ample storage space.",
-    },
-    {
-      title: "Outdoor Space",
-      text: "Private backyard with a patio area, perfect for entertaining or relaxing.",
-    },
-    {
-      title: "Parking",
-      text: "Attached garage with space for two cars and additional storage.",
-    },
-    {
-      title: "Additional Amenities",
-      text: "Central air conditioning, heating, laundry room, and smart home features.",
-    },
-  ];
+  const [isCreating, setIsCreating] = useState(false);
 
   const date = new Date(schedule.date);
   const dayNames = [
@@ -86,8 +58,6 @@ export function InspectionDetailsClient({ id }: { id: number }) {
       try {
         const res = await fetchFn(`/api/inspections/${id}`);
         if (res.status === 200) {
-          // Handle successful response
-          console.log("Fetched inspection details:", res.data.data);
           setInspectionDetails(res.data.data);
         }
       } catch (error) {
@@ -98,18 +68,32 @@ export function InspectionDetailsClient({ id }: { id: number }) {
     fetchInspectionDetails();
   }, [id]);
 
-  const createInspection = async () => {
-    console.log("Creating inspection with schedule:", schedule);
+  const createInspection = async (schedule: Schedule) => {
+    if (inspectionDetails?.status === "scheduled") {
+      toast.error("Inspection already scheduled");
+      return;
+    } else if (inspectionDetails?.status === "passed") {
+      toast.error("Inspection already completed");
+      return;
+    } else if (inspectionDetails?.status === "failed") {
+      toast.error("Inspection already completed");
+      return;
+    }
     try {
-      const response = await inspectionService.createInspection(id, {
+      console.log("Scheduling inspection with:", schedule);
+      setIsCreating(true);
+      const response = await axios.post(`/api/inspections/${id}`, {
         scheduled_at: `${schedule.date} ${schedule.time}`,
       });
       if (response.status === 200) {
         toast.success(`Meeting scheduled successfully`);
+        setSchedule(schedule);
       }
     } catch (error) {
       toast.error("Failed to schedule meeting, please try again later");
       console.error("Error scheduling meeting:", error);
+    } finally {
+      setIsCreating(false);
     }
   };
   // const submitInspectionResult = async (submitData: InspectionResultData) => {
@@ -186,11 +170,11 @@ export function InspectionDetailsClient({ id }: { id: number }) {
         isOpen={isModalOpen}
         onClose={() => setModalOpen(false)}
       />
-      <BookingModal
+      {/* <BookingModal
         isOpen={BookModal}
         onClose={() => setBookModal(false)}
         onConfirm={createInspection}
-      />
+      /> */}
       <SellerInfoModal
         product={inspectionDetails?.product}
         isOpen={contactModal}
@@ -234,7 +218,17 @@ export function InspectionDetailsClient({ id }: { id: number }) {
             {/* Desktop */}
             <div className="hidden md:flex items-center gap-5">
               <span className="">Status</span>
-              <span className="bg-[#FFFAEB] flex gap-x-1 items-center text-orange px-5 rounded-lg py-3">
+              <span
+                className={` flex gap-x-1 items-center ${
+                  inspectionDetails?.status === "passed"
+                    ? "text-green-600 bg-green-100"
+                    : inspectionDetails?.status === "scheduled"
+                    ? "text-purple-500 bg-purple-100"
+                    : inspectionDetails?.status === "failed"
+                    ? "text-red-600 bg-red-100"
+                    : "text-blue-500 bg-blue-100"
+                } px-5 rounded-lg py-3`}
+              >
                 <GoDotFill /> {inspectionDetails?.status}
               </span>
             </div>
@@ -247,14 +241,7 @@ export function InspectionDetailsClient({ id }: { id: number }) {
               {/* Left */}
               <section className="w-full md:w-[50%] ">
                 <ProductCarousel
-                  images={
-                    inspectionDetails?.product.media || [
-                      house.src,
-                      house.src,
-                      house.src,
-                      house.src,
-                    ]
-                  }
+                  images={inspectionDetails?.product.media || []}
                 />
               </section>
               {/* right */}
@@ -341,13 +328,11 @@ export function InspectionDetailsClient({ id }: { id: number }) {
                   </div>
 
                   <InspectionScheduler
-                    onSchedule={(dateTime) => {
-                      setBookModal(true);
-                      setShedule(dateTime);
-                    }}
+                    onSchedule={createInspection}
+                    isCreating={isCreating}
                   />
                   {/* key features  */}
-                  <div>
+                  {/* <div>
                     <p className="text-sm text-[#585858]">Key Features:</p>
                     <ul className="list-disc text-sm pl-5 text-[#040421]">
                       {items.map((item, index) => (
@@ -357,7 +342,11 @@ export function InspectionDetailsClient({ id }: { id: number }) {
                         </li>
                       ))}
                     </ul>
-                  </div>
+                  </div> */}
+
+                  {inspectionDetails?.product && (
+                    <KeyFeatures product={inspectionDetails?.product} />
+                  )}
                 </section>
               </section>
             </div>
@@ -388,11 +377,7 @@ export function InspectionDetailsClient({ id }: { id: number }) {
                         <div className="flex items-center gap-2">
                           <Calendar2 size={24} color="#E65800" />
                           <p className="text-[#585858] font-medium">
-                            Joined{" "}
-                            {
-                              inspectionDetails?.seller.seller_profile
-                                .created_at
-                            }
+                            Joined {inspectionDetails?.seller.created_at}
                           </p>
                         </div>
                         <div className="flex items-center gap-2">

@@ -13,7 +13,10 @@ import { FilterGroup } from "@/app/_components/common/FilterGroup";
 import { StatusSelect } from "@/app/_components/common/statusSelect";
 import { Dayjs } from "dayjs";
 import { useDebounce } from "@/app/hooks/useDebounce";
-import formatDayJs, { buildCleanParams } from "@/app/helper/helperFunction";
+import formatDayJs, {
+  buildCleanParams,
+  formatIsoString,
+} from "@/app/helper/helperFunction";
 import {
   bidsColumns,
   purchaseEnqColumns,
@@ -36,7 +39,13 @@ type IFilter = {
 type TabState = "purchase-enquiries" | "bids";
 
 interface ISelectedData {
-  purchaseEnqs: Record<string, string | number>[];
+  purchaseEnqs: {
+    ID: number;
+    "Scheduled Date": string;
+    "Scheduled Time": string;
+    "Initiated On": string;
+    "Initiated At": string;
+  }[];
   bids: Record<string, string | number>[];
 }
 
@@ -266,21 +275,75 @@ export default function Page() {
     fetchStats();
   }, []);
 
+  const handleSelectedEnquiries = (selections: Enquiry[]) => {
+    const formattedData = selections.map((item) => {
+      const [date, time] = item.scheduled_at?.split(" ") || [];
+      return {
+        ID: item.id,
+        ["Scheduled Date"]: date,
+        ["Scheduled Time"]: time,
+        ["Initiated On"]: formatIsoString(item.created_at).formattedDate,
+        ["Initiated At"]: formatIsoString(item.created_at).formattedTime,
+      };
+    });
+    setSelectedData((prev) => ({
+      ...prev,
+      purchaseEnqs: formattedData,
+    }));
+  };
+
+  const handleSelectedBids = (selections: Bid[]) => {
+    const formattedData = selections.map((item) => {
+      return {
+        ID: item.id,
+        ["Buyer name"]: item.buyer.name,
+        ["Product"]: item.auction_product.name,
+        ["Bid Amount"]: item.amount,
+        ["Initiated On"]: formatIsoString(item.created_at).formattedDate,
+        ["Initiated At"]: formatIsoString(item.created_at).formattedTime,
+      };
+    });
+    setSelectedData((prev) => ({
+      ...prev,
+      bids: formattedData,
+    }));
+  };
+
   return (
     <section className="flex bg-white mt-5 flex-col gap-4 py-10">
       {/* modals */}
       <ExportModal
         isOpen={isExporting.purchaseEnq}
+        filename="Purchase-Enquiries"
         onClose={() =>
           setIsExporting((prev) => ({ ...prev, purchaseEnq: false }))
         }
-        allData={purchaseEnqData.rows}
+        allData={(purchaseEnqData.rows as Enquiry[]).map((item) => {
+          const [date, time] = item.scheduled_at?.split(" ") || [];
+          return {
+            ID: item.id,
+            ["Scheduled Date"]: date,
+            ["Scheduled Time"]: time,
+            ["Initiated On"]: formatIsoString(item.created_at).formattedDate,
+            ["Initiated At"]: formatIsoString(item.created_at).formattedTime,
+          };
+        })}
         selectedData={selectedData.purchaseEnqs}
       />
       <ExportModal
         isOpen={isExporting.bids}
+        filename="Assigned-Bids"
         onClose={() => setIsExporting((prev) => ({ ...prev, bids: false }))}
-        allData={bidsData.rows}
+        allData={(bidsData.rows as Bid[]).map((item) => {
+          return {
+            ID: item.id,
+            ["Buyer Name"]: item.buyer.name,
+            ["Product"]: item.auction_product.name,
+            ["Bid Amount"]: item.amount,
+            ["Initiated On"]: formatIsoString(item.created_at).formattedDate,
+            ["Initiated At"]: formatIsoString(item.created_at).formattedTime,
+          };
+        })}
         selectedData={selectedData.bids}
       />
 
@@ -489,12 +552,7 @@ export default function Page() {
                   }));
                 }}
                 showCheckbox={true}
-                onSelect={(selections) => {
-                  setSelectedData((prev) => ({
-                    ...prev,
-                    purchaseEnqs: selections,
-                  }));
-                }}
+                onSelect={handleSelectedEnquiries}
                 rowHeight={60}
                 pageSize={purchaseEnqData.pagination.pageSize}
               />
@@ -589,9 +647,7 @@ export default function Page() {
                   }));
                 }}
                 showCheckbox={true}
-                onSelect={(selections) => {
-                  setSelectedData((prev) => ({ ...prev, bids: selections }));
-                }}
+                onSelect={handleSelectedBids}
                 rowHeight={60}
                 pageSize={bidsData.pagination.pageSize}
               />

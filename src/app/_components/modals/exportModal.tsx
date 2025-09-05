@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { useState } from "react";
 import { saveAs } from "file-saver";
 import Papa from "papaparse";
@@ -6,10 +8,10 @@ import autoTable from "jspdf-autotable";
 
 interface ExportModalProps {
   isOpen: boolean;
-  currentPageData?: Record<string, string | number>[];
-  selectedData: Record<string, string | number>[];
+  currentPageData?: any[];
+  selectedData: any[];
   onClose: () => void;
-  allData: Record<string, string | number>[];
+  allData: any[];
   filename?: string;
 }
 

@@ -136,17 +136,8 @@ declare interface Agent extends User {
 }
 declare interface ApiAgent extends Agent, ApiRes {}
 declare interface Seller extends User {
-  seller_profile: {
-    id: number;
-    user_id: string;
-    shop_name: string | null;
-    email: string | null;
-    phone: string | null;
-    profile_pic: string | null;
-    is_approved: boolean;
-    created_at: string;
-    updated_at: string;
-  };
+  created_at: string;
+  updated_at: string;
 }
 declare interface Inspection {
   id: number;
@@ -160,7 +151,11 @@ declare interface Inspection {
   assigned_at: string;
   completed_at: string;
   auction_product: null;
-  product: Product;
+  product: ProductDetails & {
+    id: number;
+    created_at: string;
+    updated_at: string;
+  };
   agent: Agent;
   seller: Seller;
 }
@@ -330,4 +325,36 @@ declare interface Enquiry {
     created_at: string;
     updated_at: string;
   };
+}
+
+declare interface Bid {
+  accepted_at: string | null;
+  agent_id: string;
+  amount: string;
+  auction_product: {
+    id: number;
+    name: string;
+    type: string;
+    description: string;
+    category_id: string;
+    // Add any other relevant fields here
+  };
+  auction_product_id: string;
+  buyer: {
+    id: number;
+    name: string;
+    email: string;
+    email_verified_at: string | null;
+    type: string;
+    // Add any other relevant fields here
+  };
+  buyer_id: string;
+  created_at: string;
+  id: number;
+  qty_sold: string;
+  rejected_at: string | null;
+  sold_at: string | null;
+  sold_price: string;
+  status: string;
+  updated_at: string;
 }

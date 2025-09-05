@@ -1,11 +1,13 @@
 "use client";
 
+import CopyableText from "@/app/_components/common/copyableText";
 import { Spinner } from "@/app/_components/common/spinner";
 import { EditPasswordModal } from "@/app/_components/modals/change-password-modal";
 import { EditProfileModal } from "@/app/_components/modals/edit-profile-modal";
 import { LogoutModal } from "@/app/_components/modals/logout-modal";
 import { EditPaymentModal } from "@/app/_components/modals/payment-modal";
 import { fetchFn } from "@/app/api/fetchFn";
+import { appendField } from "@/app/helper/helperFunction";
 import axios from "axios";
 import { ArrowRight2, Copy } from "iconsax-react";
 import Cookies from "js-cookie";
@@ -27,6 +29,7 @@ export default function Page() {
   // const [updating, setUpdating] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [loggingOut, setLoggingOut] = useState<boolean>(false);
+  const [updating, setUpdating] = useState<boolean>(false);
   const [agentProfile, setAgentProfile] = useState<AgentProfile>({
     user: {
       id: 0,
@@ -62,8 +65,15 @@ export default function Page() {
       bank_account_number: "",
     },
   });
-
-  const [isActive, setIsActive] = useState<boolean>(true);
+  const [formData, setFormData] = useState<UpdateProfileDto>({
+    name: "",
+    email: "",
+    phone: "",
+    location: "",
+    availability: "available",
+    bank_account_number: "",
+    bank_name: "",
+  });
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -72,8 +82,15 @@ export default function Page() {
         const response = await fetchFn("/api/auth/profile");
         console.log("User Profile: ", response.data.data);
         setAgentProfile(response.data.data);
-        const active = response.data.data.profile.availability === "available";
-        setIsActive(active);
+        setFormData({
+          name: response.data.data.user.name,
+          email: response.data.data.user.email,
+          phone: response.data.data.profile.phone,
+          location: response.data.data.profile.location,
+          availability: response.data.data.profile.availability,
+          bank_account_number: response.data.data.profile.bank_account_number,
+          bank_name: response.data.data.profile.bank_name,
+        });
       } catch (error) {
         console.log("profile fetch error:", error);
       } finally {
@@ -85,16 +102,26 @@ export default function Page() {
   }, []);
 
   const updateProfile = async (data: UpdateProfileDto) => {
+    setUpdating(true);
+    const formData = new FormData();
+    for (const [key, value] of Object.entries(data)) {
+      appendField(formData, key, value);
+    }
     try {
-      const res = await axios.put("/api/auth/profile", data);
-      console.log("Profile Updated: ", res);
+      const res = await axios.put("/api/auth/profile", formData);
+      console.log("Profile Updated: ", data);
       if (res.status === 200) {
         toast.success("Profile updated successfully");
-        setIsEditing(false);
+        setUpdating(false);
       }
     } catch (error) {
+      toast.error("Error updating profile");
       console.error("Error updating profile:", error);
     }
+  };
+
+  const handleSave = () => {
+    updateProfile(formData);
   };
 
   const handleLogout = async () => {
@@ -133,6 +160,9 @@ export default function Page() {
             phone: agentProfile.profile.phone,
             location: agentProfile.profile.location,
           }}
+          onSubmit={(data) => {
+            setFormData((prev) => ({ ...prev, ...data }));
+          }}
           isOpen={isEditing}
           onClose={() => setIsEditing(false)}
         />
@@ -141,6 +171,13 @@ export default function Page() {
           onClose={() => setIsChangingPassword(false)}
         />
         <EditPaymentModal
+          bank_name={formData.bank_name ? formData.bank_name : ""}
+          bank_account_number={
+            formData.bank_account_number ? formData.bank_account_number : ""
+          }
+          onChange={(field, value) => {
+            setFormData((prev) => ({ ...prev, [field]: value }));
+          }}
           isOpen={isPaymentModal}
           onClose={() => setPaymentModal(false)}
         />
@@ -218,10 +255,15 @@ export default function Page() {
                 <div className="flex items-center gap-2  justify-between mb-3">
                   <h6 className="text-[#5C4D58]">Phone:</h6>
                   <div className="flex items-center gap-2">
-                    <p className="text-[#150A13]">
+                    {/* <p className="text-[#150A13]">
                       {agentProfile.profile.phone}
                     </p>
-                    <Copy size={16} color="#ACA0A9" />
+                    <Copy size={16} color="#ACA0A9" /> */}
+                    <CopyableText
+                      textColor="#150A13"
+                      variant="body1"
+                      text={agentProfile.profile.phone}
+                    />
                   </div>
                 </div>
                 <div className="flex items-center gap-2  justify-between mb-3">
@@ -244,12 +286,12 @@ export default function Page() {
                   <p className="text-[#150A13] flex items-center gap-1">
                     <GoDotFill
                       className={`${
-                        agentProfile.profile.availability === "available"
+                        formData.availability === "available"
                           ? "text-green-500"
-                          : "text-yellow-500"
+                          : "text-yellow-400"
                       }`}
                     />
-                    {agentProfile.profile.availability}
+                    {formData.availability}
                   </p>
                 </div>
 
@@ -258,13 +300,15 @@ export default function Page() {
                   <button
                     className="text-[40px]"
                     onClick={() =>
-                      updateProfile({
-                        availability: isActive ? "not available" : "available",
-                      })
+                      setFormData((prev) =>
+                        prev.availability === "available"
+                          ? { ...prev, availability: "unavailable" }
+                          : { ...prev, availability: "available" }
+                      )
                     }
                     type="button"
                   >
-                    {isActive ? (
+                    {formData.availability === "available" ? (
                       <BsToggleOn className="text-[#FD6100]" size={30} />
                     ) : (
                       <BsToggleOff size={30} />
@@ -322,6 +366,31 @@ export default function Page() {
                   </button>
                 </div>
               </section>
+            </div>
+
+            <div className="flex justify-between items-center">
+              <button
+                onClick={() =>
+                  setFormData({
+                    name: agentProfile.user.name,
+                    email: agentProfile.user.email,
+                    phone: agentProfile.profile.phone,
+                    location: agentProfile.profile.location,
+                    availability: agentProfile.profile.availability,
+                    bank_account_number:
+                      agentProfile.profile.bank_account_number,
+                    bank_name: agentProfile.profile.bank_name,
+                  })
+                }
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSave}
+                className="bg-orange text-white px-4 py-2 rounded-lg"
+              >
+                {updating ? "Updating..." : "Save"}
+              </button>
             </div>
 
             <div className="flex justify-center">

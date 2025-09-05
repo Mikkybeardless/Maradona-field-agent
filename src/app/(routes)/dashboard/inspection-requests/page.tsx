@@ -1,18 +1,42 @@
 "use client";
 
 import { InspectionRequestsTable } from "@/app/_components/inspection-requests-table/inspection-requests-table";
-import { ExportModal } from "@/app/_components/modals/Export-Modal";
-import { ArrowRight2, Export, Printer } from "iconsax-react";
+import { ExportModal } from "@/app/_components/modals/exportModal";
+import { ArrowRight2, Export } from "iconsax-react";
 import Link from "next/link";
 import { useState } from "react";
 
+interface SelectedData {
+  ID: number;
+  Product: string;
+  Seller: string;
+  Category: string;
+  Status: string;
+}
 export default function Page() {
   const [exportModalOpen, setExportModalOpen] = useState(false);
+  const [selectedData, setSelectedData] = useState<SelectedData[]>([]);
+  const [allData, setAllData] = useState<SelectedData[]>([]);
+
+  const handleSelectChange = (selectedIds: Inspection[]) => {
+    const formattedData = selectedIds.map((item) => ({
+      ID: item.id,
+      Product: item.product.name,
+      Seller: item.seller.name,
+      Category: item.product.type,
+      Status: item.status,
+    }));
+    setSelectedData(formattedData);
+  };
+
   return (
     <>
       {exportModalOpen && (
         <ExportModal
+          allData={allData}
+          selectedData={selectedData}
           isOpen={exportModalOpen}
+          filename="inspection-requests"
           onClose={() => setExportModalOpen(false)}
         />
       )}
@@ -38,14 +62,26 @@ export default function Page() {
               >
                 <Export className="size-5" /> Export
               </button>
-              <button className="px-4 md:px-6 py-1 md:py-2  flex items-center gap-1 text-orange border-orange border rounded-lg hover:bg-orange-100 ">
+              {/* <button className="px-4 md:px-6 py-1 md:py-2  flex items-center gap-1 text-orange border-orange border rounded-lg hover:bg-orange-100 ">
                 <Printer className="size-5" />
                 print
-              </button>
+              </button> */}
             </div>
           </div>
           {/* table */}
-          <InspectionRequestsTable />
+          <InspectionRequestsTable
+            onFetchData={(data) => {
+              const formattedData = data.map((item) => ({
+                ID: item.id,
+                Product: item.product.name,
+                Seller: item.seller.name,
+                Category: item.product.type,
+                Status: item.status,
+              }));
+              setAllData(formattedData);
+            }}
+            handleSelectChange={handleSelectChange}
+          />
         </section>
       </section>
     </>

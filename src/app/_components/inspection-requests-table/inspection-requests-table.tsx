@@ -9,7 +9,15 @@ import { inspectionColumns } from "../table/colums";
 import { StatusSelect } from "../common/statusSelect";
 import { fetchFn } from "@/app/api/fetchFn";
 
-export const InspectionRequestsTable = () => {
+interface InspectionRequestsTableProps {
+  handleSelectChange: (selectedIds: Inspection[]) => void;
+  onFetchData: (data: Inspection[]) => void;
+}
+
+export const InspectionRequestsTable = ({
+  handleSelectChange,
+  onFetchData,
+}: InspectionRequestsTableProps) => {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
@@ -47,6 +55,7 @@ export const InspectionRequestsTable = () => {
         totalRowCount: data.total,
         loading: false,
       }));
+      onFetchData(data.data);
     };
 
     fetchData();
@@ -110,9 +119,7 @@ export const InspectionRequestsTable = () => {
                 },
               }));
             }}
-            onSelect={(selectedRows) => {
-              console.log("Selected rows:", selectedRows);
-            }}
+            onSelect={handleSelectChange}
             pageSize={inspectionData.pagination.pageSize}
           />
         </div>
