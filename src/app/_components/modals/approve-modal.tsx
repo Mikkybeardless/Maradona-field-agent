@@ -1,20 +1,20 @@
 "use client";
 
+import { InspectionResultData } from "@/app/api/services/inspection.service";
+import axios from "axios";
 import { Add } from "iconsax-react";
 import { useState } from "react";
+import { toast } from "react-toastify";
 
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onApprove: (notes: string) => void;
+  id: number;
 }
 
-export const ApproveModal: React.FC<ModalProps> = ({
-  isOpen,
-  onClose,
-  onApprove,
-}) => {
+export const ApproveModal: React.FC<ModalProps> = ({ isOpen, onClose, id }) => {
   const [notes, setNotes] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   if (!isOpen) return null;
 
   const handleBackgroundClick = (
@@ -22,6 +22,26 @@ export const ApproveModal: React.FC<ModalProps> = ({
   ) => {
     if (e.target === e.currentTarget) {
       onClose();
+    }
+  };
+
+  const handleApprove = async () => {
+    const submitData: InspectionResultData = {
+      status: "passed",
+      notes: notes,
+    };
+    try {
+      setIsSubmitting(true);
+      const response = await axios.post(`/api/inspections/${id}`, submitData);
+      if (response.status === 200) {
+        toast.success("Inspection approved successfully.");
+        onClose();
+      }
+    } catch (error) {
+      toast.error("Failed to approve inspection. Please try again.");
+      console.error("Error approving inspection:", error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -68,10 +88,10 @@ export const ApproveModal: React.FC<ModalProps> = ({
         </section>
         <div className="flex items-center gap-6  w-full justify-between">
           <button
-            onClick={() => onApprove(notes)}
+            onClick={handleApprove}
             className="px-10 py-2 w-full rounded-xl border-orange bg-orange text-white border focus:outline-none"
           >
-            Yes, I approve
+            {isSubmitting ? "Submitting..." : "Yes, I approve"}
           </button>
           <button
             onClick={onClose}

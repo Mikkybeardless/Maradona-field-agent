@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import inspectionService from "../../services/inspection.service";
 import { AxiosError } from "axios";
+import notificationService from "@/app/api/services/notifications.service";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -10,7 +10,7 @@ export async function GET(request: Request) {
   }
 
   try {
-    const response = await inspectionService.getInspections(params);
+    const response = await notificationService.getStats(params);
     if (response.status !== 200) {
       return NextResponse.json(
         { message: response.statusText },
@@ -18,12 +18,15 @@ export async function GET(request: Request) {
       );
     }
     return NextResponse.json(
-      { message: "inspections retrieved successfully", data: response.data },
+      {
+        message: "notifications stats retrieved successfully",
+        data: response.data,
+      },
       { status: 200 }
     );
   } catch (error) {
     if (error instanceof AxiosError) {
-      console.error("fetch Inspections error:", error.response?.data);
+      console.error("fetch notifications stats error:", error.response?.data);
       return NextResponse.json(
         { message: error.response?.statusText || "Axios request failed" },
         { status: error.response?.status || 500 }

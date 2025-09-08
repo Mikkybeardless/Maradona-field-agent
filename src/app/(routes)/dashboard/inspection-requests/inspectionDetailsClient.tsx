@@ -1,5 +1,4 @@
 "use client";
-
 import { ArrowRight2, Calendar2, Clock, Location } from "iconsax-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -23,6 +22,7 @@ import InspectionScheduler from "@/app/_components/inspectionScheduler";
 import { toast } from "react-toastify";
 import { KeyFeatures } from "@/app/_components/products/keyFeature";
 import axios from "axios";
+import { DetailLoadingState } from "@/app/_components/common/detailsLoading";
 
 type Schedule = {
   date: string;
@@ -30,6 +30,7 @@ type Schedule = {
 };
 
 export function InspectionDetailsClient({ id }: { id: number }) {
+  const [loading, setLoading] = useState(true);
   const [isModalOpen, setModalOpen] = useState<boolean>(false);
   const [contactModal, setContactModal] = useState(false);
   const [schedule, setSchedule] = useState<Schedule>({ date: "", time: "" });
@@ -39,7 +40,6 @@ export function InspectionDetailsClient({ id }: { id: number }) {
     null
   );
   const [isCreating, setIsCreating] = useState(false);
-
   const date = new Date(schedule.date);
   const dayNames = [
     "Sunday",
@@ -51,7 +51,6 @@ export function InspectionDetailsClient({ id }: { id: number }) {
     "Saturday",
   ];
   const dayName = dayNames[date.getDay()];
-
   useEffect(() => {
     // Fetch inspection details using the provided ID
     const fetchInspectionDetails = async () => {
@@ -59,9 +58,16 @@ export function InspectionDetailsClient({ id }: { id: number }) {
         const res = await fetchFn(`/api/inspections/${id}`);
         if (res.status === 200) {
           setInspectionDetails(res.data.data);
+          const scheduledAt = res.data.data.scheduled_at;
+          if (scheduledAt) {
+            const [datePart, timePart] = scheduledAt.split(" ");
+            setSchedule({ date: datePart, time: timePart });
+          }
         }
       } catch (error) {
         console.error("Error fetching inspection details:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -69,10 +75,7 @@ export function InspectionDetailsClient({ id }: { id: number }) {
   }, [id]);
 
   const createInspection = async (schedule: Schedule) => {
-    if (inspectionDetails?.status === "scheduled") {
-      toast.error("Inspection already scheduled");
-      return;
-    } else if (inspectionDetails?.status === "passed") {
+    if (inspectionDetails?.status === "passed") {
       toast.error("Inspection already completed");
       return;
     } else if (inspectionDetails?.status === "failed") {
@@ -80,7 +83,6 @@ export function InspectionDetailsClient({ id }: { id: number }) {
       return;
     }
     try {
-      console.log("Scheduling inspection with:", schedule);
       setIsCreating(true);
       const response = await axios.post(`/api/inspections/${id}`, {
         scheduled_at: `${schedule.date} ${schedule.time}`,
@@ -96,85 +98,16 @@ export function InspectionDetailsClient({ id }: { id: number }) {
       setIsCreating(false);
     }
   };
-  // const submitInspectionResult = async (submitData: InspectionResultData) => {
-  //   if (!id) {
-  //     throw new Error("Inspection ID is required");
-  //   }
-  //   try {
-  //     const res = await inspectionService.submitResult(parseInt(id, 10), {
-  //       approval_status: submitData.approval_status,
-  //       condition: submitData.condition,
-  //       documents_in_order: submitData.documents_in_order,
-  //       notes: submitData.notes,
-  //     });
 
-  //     if (res.status === 200) {
-  //       toast.success("Inspection result submitted successfully");
-  //       setApprovedModal(false);
-  //       setDeclinedModal(false);
-  //     } else {
-  //       toast.error("Failed to submit inspection result. Please try again.");
-  //     }
-  //   } catch (error) {
-  //     console.error("Error submitting inspection result:", error);
-  //     toast.error("An unknown error occured. try again");
-  //   }
-  // };
-
-  // const handleApprove = async (notes: string) => {
-  //   const submitData: InspectionResultData = {
-  //     approval_status: "approved",
-  //     condition: "matched",
-  //     documents_in_order: 1,
-  //     notes: notes || "Inspection approved. All documents are in order.",
-  //   };
-  //   await submitInspectionResult(submitData);
-  // };
-
-  // const handleDecline = async (notes: string) => {
-  //   const submitData: InspectionResultData = {
-  //     approval_status: "rejected",
-  //     condition: "mismatched",
-  //     documents_in_order: 0,
-  //     notes: notes || "Inspection declined. Documents are not in order.",
-  //   };
-  //   await submitInspectionResult(submitData);
-  // };
-  // const rescheduleInspection = async (data: updateInspectionData) => {
-  //   if (!selectedSession || !selectedTime) {
-  //     toast.error("Please select a date and time for rescheduling.");
-  //     return;
-  //   }
-  //   try {
-  //     const res = await inspectionService.updateInspection(parseInt(id, 10), {
-  //       scheduled_at: `${selectedSession} ${selectedTime}`,
-  //     });
-  //     if (res.status === 200) {
-  //       toast.success("Inspection rescheduled successfully");
-  //       setModalOpen(false);
-  //       setShedule({ date: selectedSession, time: selectedTime });
-  //     } else {
-  //       toast.error("Failed to reschedule inspection. Please try again.");
-  //     }
-  //   } catch (error) {
-  //     console.error("Error rescheduling inspection:", error);
-  //     toast.error("An unknown error occurred. Please try again.");
-  //     return;
-  //   }
-  // };
-
-  console.log("inspection Details:", id);
-  return (
-    <div className=" flex flex-col  gap-14">
+  return loading ? (
+    <DetailLoadingState message="Loading inspection details..." />
+  ) : (
+    <>
+      {/* modals */}
       <RescheduleModal
         isOpen={isModalOpen}
         onClose={() => setModalOpen(false)}
       />
-      {/* <BookingModal
-        isOpen={BookModal}
-        onClose={() => setBookModal(false)}
-        onConfirm={createInspection}
-      /> */}
       <SellerInfoModal
         product={inspectionDetails?.product}
         isOpen={contactModal}
@@ -182,23 +115,18 @@ export function InspectionDetailsClient({ id }: { id: number }) {
         onClose={() => setContactModal(false)}
       />
       <ApproveModal
-        onApprove={() => {
-          console.log("Approved");
-          setApprovedModal(false);
-        }}
         isOpen={approvedModal}
+        id={id}
         onClose={() => setApprovedModal(false)}
       />
       <DeclineModal
-        onDecline={() => {
-          console.log("Declined");
-          setDeclinedModal(false);
-        }}
         isOpen={declinedModal}
+        id={id}
         onClose={() => setDeclinedModal(false)}
       />
-      <section className="">
-        <div className="md:flex items-center hidden gap-2.5 my-7 ">
+
+      <main className="flex flex-col  gap-14">
+        <section className="md:flex items-center hidden gap-2.5 my-7 ">
           <Link className="text-xs" href="/dashboard/overview">
             Home
           </Link>
@@ -208,7 +136,8 @@ export function InspectionDetailsClient({ id }: { id: number }) {
           </Link>
           <ArrowRight2 size={20} color="#5C4D58" />
           <span className="text-xs">Inspection Details</span>
-        </div>
+        </section>
+
         <section>
           <header className="flex items-center justify-between mb-16">
             <h6 className="text-black text-2xl font-semibold">
@@ -292,12 +221,12 @@ export function InspectionDetailsClient({ id }: { id: number }) {
 
                     {schedule.date.trim() && schedule.time.trim() && (
                       <div className="space-y-3 ">
-                        <div className="p-4 bg-[#DCFAE6] rounded-xl">
+                        <div className="p-4 bg-[#DCFAE6] rounded-xl"> 
                           <div className="flex items-center gap-2 mb-3">
                             <RiErrorWarningLine size={24} />
                             <p className="text-[#585858]">
-                              You have scheduled an inspection for {dayName} at{" "}
-                              {schedule.time}
+                              You have scheduled an inspection for {dayName},{" "}
+                              {schedule.date} at {schedule.time}
                             </p>
                           </div>
 
@@ -326,23 +255,12 @@ export function InspectionDetailsClient({ id }: { id: number }) {
                       </div>
                     )}
                   </div>
-
                   <InspectionScheduler
+                    status={inspectionDetails?.status || ""}
                     onSchedule={createInspection}
                     isCreating={isCreating}
                   />
                   {/* key features  */}
-                  {/* <div>
-                    <p className="text-sm text-[#585858]">Key Features:</p>
-                    <ul className="list-disc text-sm pl-5 text-[#040421]">
-                      {items.map((item, index) => (
-                        <li key={index} className="mb-2">
-                          <span className="font-bold ">{item.title}:</span>{" "}
-                          <span className="font-normal">{item.text}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div> */}
 
                   {inspectionDetails?.product && (
                     <KeyFeatures product={inspectionDetails?.product} />
@@ -451,7 +369,7 @@ export function InspectionDetailsClient({ id }: { id: number }) {
             </section>
           </section>
         </section>
-      </section>
-    </div>
+      </main>
+    </>
   );
 }

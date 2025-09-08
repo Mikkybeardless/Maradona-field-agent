@@ -87,7 +87,12 @@ export const SellerInfoModal: React.FC<ModalProps> = ({
         <div className="space-y-2">
           <h3 className="text-[#585858] font-semibold">Property Details</h3>
           <div className="flex gap-4">
-            <Image src={house} width={130} height={70} alt="house image" />
+            <Image
+              src={product?.media[0] || house}
+              width={130}
+              height={70}
+              alt="house image"
+            />
             <div className="flex flex-col space-y-2">
               <span className="text-xl font-semibold text-[#040421]">
                 {product?.name}

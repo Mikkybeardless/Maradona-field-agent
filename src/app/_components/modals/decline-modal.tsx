@@ -3,19 +3,19 @@
 import { Add } from "iconsax-react";
 import { AnimatedCirclesImage } from "../common/animatedWarning";
 import { useState } from "react";
+import { InspectionResultData } from "@/app/api/services/inspection.service";
+import { toast } from "react-toastify";
+import axios from "axios";
 
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onDecline: (reason: string) => void;
+  id: number;
 }
 
-export const DeclineModal: React.FC<ModalProps> = ({
-  isOpen,
-  onClose,
-  onDecline,
-}) => {
+export const DeclineModal: React.FC<ModalProps> = ({ isOpen, onClose, id }) => {
   const [reason, setReason] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   if (!isOpen) return null;
 
   const handleBackgroundClick = (
@@ -23,6 +23,26 @@ export const DeclineModal: React.FC<ModalProps> = ({
   ) => {
     if (e.target === e.currentTarget) {
       onClose();
+    }
+  };
+
+  const handleDecline = async () => {
+    const submitData: InspectionResultData = {
+      status: "failed",
+      notes: reason,
+    };
+    try {
+      setIsSubmitting(true);
+      const response = await axios.post(`/api/inspections/${id}`, submitData);
+      if (response.status === 200) {
+        toast.success("Inspection declined successfully.");
+        onClose();
+      }
+    } catch (error) {
+      toast.error("Failed to decline inspection. Please try again.");
+      console.error("Error declining inspection:", error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -68,10 +88,10 @@ export const DeclineModal: React.FC<ModalProps> = ({
         </section>
         <div className="flex items-center justify-between gap-6  w-full">
           <button
-            onClick={() => onDecline(reason)}
+            onClick={handleDecline}
             className="px-10 w-full py-2 rounded-xl border-orange bg-orange text-white border focus:outline-none"
           >
-            Decline
+            {isSubmitting ? "Submitting..." : "Decline"}
           </button>
           <button
             onClick={onClose}

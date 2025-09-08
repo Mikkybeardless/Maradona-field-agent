@@ -4,11 +4,13 @@ import { toast } from "react-toastify";
 interface InspectionSchedulerProps {
   onSchedule: (dateTime: { date: string; time: string }) => void;
   isCreating?: boolean;
+  status: string;
 }
 
 export default function InspectionScheduler({
   onSchedule,
   isCreating,
+  status,
 }: InspectionSchedulerProps) {
   const [selectedSession, setSelectedSession] = useState<number | null>(null);
   const [selectedTime, setSelectedTime] = useState<number | null>(null);
@@ -111,7 +113,11 @@ export default function InspectionScheduler({
           onClick={handleScheduleInspection}
           className="w-full py-2 bg-orange rounded-xl hover:bg-inherit hover:border hover:border-orange text-white hover:text-orange transition-colors"
         >
-          {isCreating ? "Scheduling..." : "Schedule Inspection"}
+          {isCreating
+            ? "Scheduling..."
+            : status !== "scheduled"
+            ? "Schedule Inspection"
+            : "Reschedule Inspection"}
         </button>
       </div>
     </div>

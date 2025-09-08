@@ -146,13 +146,13 @@ export const InspectionActionCellComponent = ({ rowId }: { rowId: string }) => {
           View
         </Link>
 
-        <button className="text-xs hover:underline hover:text-green-600">
+        {/* <button className="text-xs hover:underline hover:text-green-600">
           Approve
         </button>
 
         <button className="text-xs hover:underline hover:text-red-600">
           Declined
-        </button>
+        </button> */}
       </Popper>
     </div>
   );
