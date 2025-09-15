@@ -358,3 +358,38 @@ declare interface Bid {
   status: string;
   updated_at: string;
 }
+
+//  Notification Types
+// */
+declare interface NotificationStats {
+  total: number;
+  unread: number;
+  read: number;
+}
+
+declare interface NotificationData {
+  id: string | number;
+  title?: string;
+  message?: string;
+  data?: any;
+  humanized_data?: any;
+  read_at?: string | null;
+  created_at: string;
+}
+
+declare interface PaginationInfo {
+  current_page: number;
+  per_page: number;
+  total: number;
+  total_pages: number;
+}
+
+declare interface NotificationsState {
+  notifications: NotificationData[];
+  unreadNotifications: NotificationData[];
+  stats: NotificationStats | null;
+  pagination: PaginationInfo;
+  loading: boolean;
+  statsLoading: boolean;
+  error: string | null;
+}

@@ -145,14 +145,6 @@ export const InspectionActionCellComponent = ({ rowId }: { rowId: string }) => {
         >
           View
         </Link>
-
-        {/* <button className="text-xs hover:underline hover:text-green-600">
-          Approve
-        </button>
-
-        <button className="text-xs hover:underline hover:text-red-600">
-          Declined
-        </button> */}
       </Popper>
     </div>
   );
@@ -507,13 +499,13 @@ export const PurchaseActionCellComponent = ({
       if (response.status === 200) {
         toast.success(`Meeting scheduled successfully`);
         setScheduleModalOpen(false);
+        window.location.reload();
       }
     } catch (error) {
       toast.error("Failed to schedule meeting");
       console.error("Error scheduling meeting:", error);
     } finally {
       setIsScheduling(false);
-      window.location.reload();
     }
   };
 

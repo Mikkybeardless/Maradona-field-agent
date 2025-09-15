@@ -2,7 +2,7 @@ import notificationService from "@/app/api/services/notifications.service";
 import { AxiosError } from "axios";
 import { NextResponse } from "next/server";
 
-export async function PUT(
+export async function POST(
   _: Request,
   { params }: { params: Promise<{ id: number }> }
 ) {
@@ -38,7 +38,7 @@ export async function PUT(
 }
 
 export async function DELETE(
-  req: Request,
+  _: Request,
   { params }: { params: Promise<{ id: number }> }
 ) {
   try {

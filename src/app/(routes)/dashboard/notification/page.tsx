@@ -1,53 +1,320 @@
-import { RequestCard } from "@/app/_components/cards/request-card";
-import House from "@/app/_assets/images/house2.png"; // Adjust the path as necessary
-import { InspectionCard } from "@/app/_components/cards/upcoming-inspection";
+"use client";
 
-export default function Page() {
-  //  sample data for the request card
-  const request = {
-    status: "Approved",
-    imgsrc: House.src, // Replace with actual image path
-    des: "Inspection Request for Property",
-    id: "1938409",
-    postedBy: "John Doe",
-    timestamp: "2024-10-01 12:30 PM",
+import NotificationCard from "@/app/_components/notifications/NotificationCard";
+import NotificationModal from "@/app/_components/notifications/NotificationModal";
+import {
+  clearError,
+  deleteNotification,
+  fetchNotifications,
+  fetchNotificationStats,
+  markAllNotificationsRead,
+  markNotificationRead,
+  optimisticDelete,
+  optimisticMarkAllRead,
+  optimisticMarkRead,
+} from "@/app/redux/slices/notificationsSlice";
+import { AppDispatch, RootState } from "@/app/redux/store";
+import {
+  Alert,
+  Badge,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  CircularProgress,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Pagination,
+  Select,
+  SelectChangeEvent,
+  Snackbar,
+  Typography,
+} from "@mui/material";
+import React, { ReactNode, useEffect, useState } from "react";
+import { FiBell, FiEye, FiEyeOff } from "react-icons/fi";
+import { useDispatch, useSelector } from "react-redux";
+
+const POLL_MS = 2 * 60 * 1000;
+
+export default function NotificationsPage() {
+  const dispatch = useDispatch<AppDispatch>();
+  const { notifications, stats, pagination, loading, statsLoading, error } =
+    useSelector((state: RootState) => state.notifications);
+
+  const [active, setActive] = useState<any | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [perPage, setPerPage] = useState(15);
+
+  const [snack, setSnack] = useState<{
+    open: boolean;
+    msg: string;
+    severity?: "error" | "success";
+  }>({ open: false, msg: "" });
+
+  useEffect(() => {
+    dispatch(fetchNotifications({ page: currentPage, per_page: perPage }));
+    dispatch(fetchNotificationStats());
+
+    const id = setInterval(() => {
+      dispatch(fetchNotifications({ page: currentPage, per_page: perPage }));
+      dispatch(fetchNotificationStats());
+    }, POLL_MS);
+
+    return () => {
+      if (id) clearInterval(id);
+    };
+  }, [dispatch, currentPage, perPage]);
+
+  useEffect(() => {
+    if (error) {
+      setSnack({
+        open: true,
+        msg: error,
+        severity: "error",
+      });
+      dispatch(clearError());
+    }
+  }, [error, dispatch]);
+
+  const handlePageChange = (_: React.ChangeEvent<unknown>, value: number) => {
+    setCurrentPage(value);
   };
 
-  const request2 = {
-    status: "Declined",
-    imgsrc: House.src, // Replace with actual image path
-    des: "Inspection Request for Property",
-    id: "1938409",
-    postedBy: "John Doe",
-    timestamp: "2024-10-01 12:30 PM",
+  const handlePerPageChange = (
+    event: SelectChangeEvent<number>,
+    _: ReactNode
+  ) => {
+    const newPerPage = event.target.value;
+    setPerPage(newPerPage);
+    setCurrentPage(1);
   };
 
-  const inspection = {
-    imgsrc: House.src,
-    des: "Inspection Request for Property",
-    id: "1938609",
-    postedBy: "Jane Smith",
-    timestamp: "2024-10-01 01:00 PM",
-    location: "123 Main St, City",
-    phone: "+1234567890",
-    date: "2024-10-02",
-    time: "10:00 AM",
+  const handleRefresh = () => {
+    dispatch(fetchNotifications({ page: currentPage, per_page: perPage }));
+    dispatch(fetchNotificationStats());
   };
+
+  async function openNotif(n: NotificationData) {
+    setActive(n);
+
+    // Only mark as read if it's not already read
+    if (!n.read_at) {
+      dispatch(optimisticMarkRead(n.id));
+      try {
+        await dispatch(markNotificationRead(n.id)).unwrap();
+      } catch (error) {
+        console.error("mark one as read error:", error);
+      }
+    }
+  }
+
+  async function handleMarkAllRead() {
+    dispatch(optimisticMarkAllRead());
+    try {
+      await dispatch(markAllNotificationsRead()).unwrap();
+      setSnack({
+        open: true,
+        msg: "All notifications marked as read",
+        severity: "success",
+      });
+    } catch (error) {
+      console.error("mark all as read error:", error);
+    }
+  }
+
+  async function handleDelete(id: string | number) {
+    dispatch(optimisticDelete(id));
+    setActive(null);
+    try {
+      await dispatch(deleteNotification(id)).unwrap();
+      setSnack({
+        open: true,
+        msg: "Notification deleted",
+        severity: "success",
+      });
+    } catch (error) {
+      console.error("delete notigication one error:", error);
+    }
+  }
+
+  const unreadCount = notifications.filter((n) => !n.read_at).length;
+
+  const humanizedStats = [
+    {
+      title: "Total Notifications",
+      data: stats?.total,
+      icon: FiBell,
+    },
+    {
+      title: "Read",
+      data: stats?.read,
+      icon: FiEye,
+    },
+    {
+      title: "Unread",
+      data: stats?.unread,
+      icon: FiEyeOff,
+    },
+  ];
 
   return (
-    <section className=" md:px-20 md:py-10">
-      <div className="w-full  md:max-w-[60rem]  mx-auto bg-white rounded-lg shadow-md">
-        <header className="px-6 py-4 border-b border-gray-300 space-y-6">
-          <h2 className="md:text-2xl font-semibold">Updates</h2>
-        </header>
-
-        <div className="md:px-6 px-2 space-y-5 py-4 rounded-lg">
-          <h3 className="font-semibold text-lg">Today</h3>
-          <RequestCard request={request} />
-          <InspectionCard inspection={inspection} />
-          <RequestCard request={request2} />
+    <main className="p-6 max-w-6xl mx-auto">
+      {/* Header Section */}
+      <div className="flex justify-between items-center mb-6">
+        <div className="flex items-center gap-3">
+          <h1 className="text-3xl font-bold text-gray-800">Notifications</h1>
+          <Badge badgeContent={unreadCount} color="error" />
+        </div>
+        <div className="flex gap-3">
+          <Button
+            variant="outlined"
+            className="!text-orange !border-orange border"
+            onClick={handleRefresh}
+            disabled={loading}
+            startIcon={
+              loading ? (
+                <CircularProgress className="!text-orange" size={16} />
+              ) : null
+            }
+          >
+            Refresh
+          </Button>
+          <Button
+            variant="contained"
+            className="!text-white !bg-orange"
+            onClick={handleMarkAllRead}
+            disabled={unreadCount === 0}
+          >
+            Mark all read
+          </Button>
         </div>
       </div>
-    </section>
+
+      {/* Controls Section */}
+      <div className="flex flex-row-reverse justify-between items-center mb-4">
+        <div className="flex items-center gap-4">
+          <FormControl
+            variant="outlined"
+            size="small"
+            sx={{
+              minWidth: 120,
+              "& .MuiOutlinedInput-notchedOutline": { borderColor: "orange" },
+              "&:hover .MuiOutlinedInput-notchedOutline": {
+                borderColor: "orange",
+              },
+              "& .MuiSelect-select": { color: "#e65800" },
+              "& .MuiSvgIcon-root": { color: "#e65800" },
+              "& .MuiInputLabel-root": { color: "#e65800" },
+              "& .MuiInputLabel-root.Mui-focused": { color: "#e65800" },
+            }}
+          >
+            <InputLabel>Per Page</InputLabel>
+            <Select
+              value={perPage}
+              label="Per Page"
+              onChange={handlePerPageChange}
+            >
+              {[10, 15, 20, 25, 30, 40, 50].map((opt) => (
+                <MenuItem key={opt} value={opt} sx={{ color: "#e65800" }}>
+                  {opt}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          <Typography variant="body2" color="textSecondary">
+            Showing {notifications.length} of {pagination.total} notifications
+          </Typography>
+        </div>
+
+        {pagination.total_pages > 1 && (
+          <Pagination
+            count={pagination.total_pages}
+            page={currentPage}
+            onChange={handlePageChange}
+            color="primary"
+            size="small"
+          />
+        )}
+
+        {/* Stats Section */}
+        {stats && (
+          <div className="flex justify-end flex-wrap gap-4 mb-4">
+            {humanizedStats.map((stat, index) => (
+              <div
+                key={index}
+                className="flex gap-3 items-center justify-center"
+              >
+                |<span className="font-medium">{stat.data}</span>
+                <span>{stat.title}</span>
+                <stat.icon className="size-4 opacity-80" />
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Notifications List */}
+      <Card>
+        <CardContent>
+          {loading && notifications.length === 0 ? (
+            <Box className="flex justify-center items-center py-8">
+              <CircularProgress className="!text-orange" />
+              <Typography className="ml-3">Loading notifications...</Typography>
+            </Box>
+          ) : notifications.length === 0 ? (
+            <Box className="text-center py-8">
+              <FiBell className="text-4xl text-gray-400 mx-auto mb-4" />
+              <Typography variant="h6" color="textSecondary">
+                No notifications found
+              </Typography>
+            </Box>
+          ) : (
+            <div className="space-y-3 max-h-[60vh] overflow-y-auto">
+              {notifications.map((n) => (
+                <NotificationCard n={n} openNotif={openNotif} />
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Pagination Footer */}
+      {pagination.total_pages > 1 && (
+        <Box className="flex justify-center mt-6">
+          <Pagination
+            count={pagination.total_pages}
+            page={currentPage}
+            onChange={handlePageChange}
+            color="primary"
+            showFirstButton
+            showLastButton
+          />
+        </Box>
+      )}
+
+      {/* Notification Modal */}
+      <NotificationModal
+        open={!!active}
+        onClose={() => setActive(null)}
+        notification={active}
+        onDelete={handleDelete}
+      />
+
+      {/* Snackbar for notifications */}
+      <Snackbar
+        open={snack.open}
+        autoHideDuration={4000}
+        onClose={() => setSnack({ open: false, msg: "" })}
+      >
+        <Alert
+          severity={snack.severity ?? "success"}
+          onClose={() => setSnack({ open: false, msg: "" })}
+        >
+          {snack.msg}
+        </Alert>
+      </Snackbar>
+    </main>
   );
 }

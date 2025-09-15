@@ -80,7 +80,6 @@ export default function Page() {
       setIsLoading(true);
       try {
         const response = await fetchFn("/api/auth/profile");
-        console.log("User Profile: ", response.data.data);
         setAgentProfile(response.data.data);
         setFormData({
           name: response.data.data.user.name,
@@ -109,14 +108,15 @@ export default function Page() {
     }
     try {
       const res = await axios.put("/api/auth/profile", formData);
-      console.log("Profile Updated: ", data);
       if (res.status === 200) {
         toast.success("Profile updated successfully");
-        setUpdating(false);
+        setAgentProfile(res.data.data);
       }
     } catch (error) {
       toast.error("Error updating profile");
       console.error("Error updating profile:", error);
+    } finally {
+      setUpdating(false);
     }
   };
 

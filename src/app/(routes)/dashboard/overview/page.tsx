@@ -536,9 +536,6 @@ export default function Page() {
               <MuiTableComponent
                 columns={purchaseEnqColumns}
                 rows={purchaseEnqData.rows}
-                // onRowClick={(row) => {
-                //   router.push(`/dashboard/purchase-enq/${row.id}`);
-                // }}
                 loading={purchaseEnqData.loading}
                 currentPage={purchaseEnqData.pagination.page}
                 totalRowCount={purchaseEnqData.totalRowCount}
