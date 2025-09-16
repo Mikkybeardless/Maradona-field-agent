@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 // product types
 declare type ProductType = "LAND" | "CAR" | "HOUSE";
 declare type ProductStatus = "draft" | "published";

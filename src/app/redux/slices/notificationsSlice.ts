@@ -53,6 +53,7 @@ export const markNotificationRead = createAsyncThunk(
       await axios.put(`/api/notifications/${id}`);
       return id;
     } catch (error) {
+      console.error("Failed to mark notification as read", error);
       return rejectWithValue("Failed to mark notification as read");
     }
   }
@@ -65,6 +66,7 @@ export const markAllNotificationsRead = createAsyncThunk(
       await axios.post("/api/notifications");
       return null;
     } catch (error) {
+      console.error("Failed to mark all notifications as read", error);
       return rejectWithValue("Failed to mark all notifications as read");
     }
   }
@@ -77,6 +79,7 @@ export const deleteNotification = createAsyncThunk(
       await axios.delete(`/api/notifications/${id}`);
       return id;
     } catch (error) {
+      console.error("Failed to delete notification", error);
       return rejectWithValue("Failed to delete notification");
     }
   }

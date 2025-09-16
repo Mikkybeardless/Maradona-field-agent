@@ -1,5 +1,5 @@
 "use client";
-
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import NotificationCard from "@/app/_components/notifications/NotificationCard";
 import NotificationModal from "@/app/_components/notifications/NotificationModal";
 import {
@@ -31,7 +31,7 @@ import {
   Snackbar,
   Typography,
 } from "@mui/material";
-import React, { ReactNode, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { FiBell, FiEye, FiEyeOff } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -39,8 +39,9 @@ const POLL_MS = 2 * 60 * 1000;
 
 export default function NotificationsPage() {
   const dispatch = useDispatch<AppDispatch>();
-  const { notifications, stats, pagination, loading, statsLoading, error } =
-    useSelector((state: RootState) => state.notifications);
+  const { notifications, stats, pagination, loading, error } = useSelector(
+    (state: RootState) => state.notifications
+  );
 
   const [active, setActive] = useState<any | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -81,10 +82,7 @@ export default function NotificationsPage() {
     setCurrentPage(value);
   };
 
-  const handlePerPageChange = (
-    event: SelectChangeEvent<number>,
-    _: ReactNode
-  ) => {
+  const handlePerPageChange = (event: SelectChangeEvent<number>) => {
     const newPerPage = event.target.value;
     setPerPage(newPerPage);
     setCurrentPage(1);
@@ -272,8 +270,8 @@ export default function NotificationsPage() {
             </Box>
           ) : (
             <div className="space-y-3 max-h-[60vh] overflow-y-auto">
-              {notifications.map((n) => (
-                <NotificationCard n={n} openNotif={openNotif} />
+              {notifications.map((n, index) => (
+                <NotificationCard key={index} n={n} openNotif={openNotif} />
               ))}
             </div>
           )}

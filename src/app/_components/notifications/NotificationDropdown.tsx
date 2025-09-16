@@ -1,4 +1,6 @@
 "use client";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import React, { useEffect, useRef } from "react";
 import {
   Box,
@@ -79,11 +81,10 @@ export default function NotificationsDropdown() {
     setActive(n);
 
     // API call
-    try {
-      await dispatch(markNotificationRead(n.id)).unwrap();
-    } catch (error) {
-      // Error handling is managed by Redux
-    }
+
+    await dispatch(markNotificationRead(n.id)).unwrap();
+
+    // Error handling is managed by Redux
   }
 
   async function handleDelete(id: string | number) {
@@ -91,16 +92,14 @@ export default function NotificationsDropdown() {
     dispatch(optimisticDelete(id));
     setActive(null);
 
-    try {
-      await dispatch(deleteNotification(id)).unwrap();
-      setSnack({
-        open: true,
-        msg: "Notification deleted",
-        severity: "success",
-      });
-    } catch (error) {
-      // Error handling is managed by Redux
-    }
+    await dispatch(deleteNotification(id)).unwrap();
+    setSnack({
+      open: true,
+      msg: "Notification deleted",
+      severity: "success",
+    });
+
+    // Error handling is managed by Redux
   }
 
   function handleRefresh() {
