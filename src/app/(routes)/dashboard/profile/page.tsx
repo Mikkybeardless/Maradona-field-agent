@@ -6,12 +6,13 @@ import { EditPasswordModal } from "@/app/_components/modals/change-password-moda
 import { EditProfileModal } from "@/app/_components/modals/edit-profile-modal";
 import { LogoutModal } from "@/app/_components/modals/logout-modal";
 import { EditPaymentModal } from "@/app/_components/modals/payment-modal";
+import ProfilePictureUpload from "@/app/_components/ProfilePictureUpload";
 import { fetchFn } from "@/app/api/fetchFn";
 import { appendField } from "@/app/helper/helperFunction";
 import axios from "axios";
 import { ArrowRight2, Copy } from "iconsax-react";
 import Cookies from "js-cookie";
-import Image from "next/image";
+
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { BsToggleOff, BsToggleOn } from "react-icons/bs";
@@ -26,10 +27,10 @@ export default function Page() {
   const [isChangingPassword, setIsChangingPassword] = useState<boolean>(false);
   const [isPaymentModal, setPaymentModal] = useState(false);
   const [isLogoutModal, setIsLogoutModal] = useState<boolean>(false);
-  // const [updating, setUpdating] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [loggingOut, setLoggingOut] = useState<boolean>(false);
   const [updating, setUpdating] = useState<boolean>(false);
+  const [isUpdatingPic, setIsUpdatingPic] = useState(false);
   const [agentProfile, setAgentProfile] = useState<AgentProfile>({
     user: {
       id: 0,
@@ -59,6 +60,7 @@ export default function Page() {
       updated_at: "",
       location: "",
       phone: "",
+      profile_pic: "",
       staff_id: "",
       availability: "available",
       bank_name: "",
@@ -194,19 +196,29 @@ export default function Page() {
         <section className="flex flex-col gap-3 items-center">
           <div className="w-full bg-white border border-[#EAE6E9] rounded-lg px-6 py-4">
             <div className="mx-auto mb-4 pt-10 md:pt-2 grid place-items-center w-fit relative">
-              <Image
+              {/* <Image
                 src="/default_profile.png"
                 width={100}
                 height={100}
                 alt="logo"
                 className=" rounded-full object-contain"
               />
-              {/* <button
+              <button
                 type="button"
                 className="size-6 bg-gray-100 shadow-md rounded-full grid place-items-center absolute bottom-0 right-1.5"
               >
                 <Camera size={16} color="#000000" />
               </button> */}
+              <div
+                className={`rounded-full  ${
+                  isUpdatingPic ? "animate-pulse" : ""
+                } border-[4px] w-fit`}
+              >
+                <ProfilePictureUpload
+                  onUpdating={setIsUpdatingPic}
+                  apiImage={agentProfile.profile.profile_pic}
+                />
+              </div>
             </div>
 
             <div className="w-fit text-center mx-auto mt-4">

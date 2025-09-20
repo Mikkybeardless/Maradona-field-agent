@@ -297,6 +297,7 @@ declare interface AgentProfile {
     updated_at: string;
     location: string;
     phone: string;
+    profile_pic: string;
     staff_id: string;
     availability: string;
     bank_name: string;
