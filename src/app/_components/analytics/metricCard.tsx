@@ -26,7 +26,7 @@ export const MetricCard = ({
         <p className={`text-2xl font-bold ${color}`}>
           {isRevenue && "₦"}
           {value}
-          {isRevenue && "M"}
+          {isRevenue && "K"}
         </p>
         {subtitle && <p className="text-sm text-gray-500 mt-1">{subtitle}</p>}
       </div>

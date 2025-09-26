@@ -420,7 +420,7 @@ export default function Page() {
               value={
                 (Number(stats.bids.total_revenue) +
                   Number(stats.enquiries.total_revenue)) /
-                1000000
+                1000
               }
               subtitle="Combined revenue"
               icon={DollarSign}

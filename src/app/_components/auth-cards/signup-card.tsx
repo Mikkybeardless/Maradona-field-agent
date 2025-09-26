@@ -33,14 +33,12 @@ export const SignUpCard = () => {
     e.preventDefault();
     setIsLoading(true);
     // Here you would typically send the formData to your backend service
-    console.log("Form submitted with data:", formData);
+    // console.log("Form submitted with data:", formData);
     try {
       const res = await axios.post("/api/auth/signup", formData);
       if (res.status === 201) {
         toast.success("Signup successful");
-        return setTimeout(() => {
-          router.push("/authentication/login");
-        }, 2000);
+        router.push("/authentication/login");
       }
     } catch (error: unknown) {
       toast.error("Signup failed. Please try again.");

@@ -46,16 +46,12 @@ export const LoginCard = () => {
 
       if (response.status == 200) {
         const data = response.data.data;
-        console.log("Login successful:", data.user);
         dispatch(login(data.user));
         // Set cookies
         Cookies.set("agent_token", data.token);
-
         toast.success("Login successful");
         // Redirect
-        return setTimeout(() => {
-          router.push("/dashboard/overview");
-        }, 2000);
+        router.push("/dashboard/overview");
       }
     } catch (err: unknown) {
       console.error("Login error:", err);

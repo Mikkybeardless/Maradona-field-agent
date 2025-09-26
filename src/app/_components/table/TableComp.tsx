@@ -15,7 +15,7 @@ type TableComponentProps = {
   rows: any[];
   onSelect?: (selectedRows: any[]) => void;
   pageSize?: number;
-  onPageChange?: (model: GridPaginationModel) => void;
+  onPageChange?: (model: { page: number; pageSize: number }) => void;
   currentPage?: number; // Optional, used for server-side pagination
   totalRowCount?: number;
   rowHeight?: number;
@@ -74,10 +74,12 @@ export default function MuiTableComponent({
             columns={columns}
             paginationMode="server"
             paginationModel={{
-              page: currentPage > 0 ? currentPage - 1 : 0, // Adjust for zero-based index
+              page: currentPage - 1, // Adjust for zero-based index
               pageSize: pageSize || 10,
             }}
-            onPaginationModelChange={onPageChange}
+            onPaginationModelChange={(model) =>
+              onPageChange && onPageChange({ page: model.page + 1, pageSize: model.pageSize })
+            }
             pageSizeOptions={[5, 10, 15, 20]}
             checkboxSelection={showCheckbox}
             disableColumnFilter={true}
