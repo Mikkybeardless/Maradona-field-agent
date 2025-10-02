@@ -19,7 +19,13 @@ export const InspectionTabSection = ({
         <h3 className="text-lg font-semibold text-gray-800 mb-4">
           Inspection Status by Type
         </h3>
-        <ReusableBarChart data={inspectionData} />
+        {inspectionData.length === 0 ? (
+          <div className="flex justify-center mt-4 space-x-4">
+            <p className="text-gray-300">No inspection activity yet</p>
+          </div>
+        ) : (
+          <ReusableBarChart data={inspectionData} />
+        )}
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">

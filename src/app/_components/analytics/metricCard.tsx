@@ -1,4 +1,4 @@
-import { TrendingDown, TrendingUp } from "lucide-react";
+// import { TrendingDown, TrendingUp } from "lucide-react";
 
 interface MetricCardProps {
   title: string;
@@ -16,7 +16,6 @@ export const MetricCard = ({
   subtitle,
   icon: Icon,
   color,
-  trend,
   isRevenue = false,
 }: MetricCardProps) => (
   <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200">
@@ -38,7 +37,7 @@ export const MetricCard = ({
         <Icon className={`w-6 h-6 ${color}`} />
       </div>
     </div>
-    {trend && (
+    {/* {trend && (
       <div className="mt-4 flex items-center">
         {trend > 0 ? (
           <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
@@ -54,6 +53,6 @@ export const MetricCard = ({
         </span>
         <span className="text-sm text-gray-500 ml-1">vs last period</span>
       </div>
-    )}
+    )} */}
   </div>
 );

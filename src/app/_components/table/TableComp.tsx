@@ -4,7 +4,6 @@ import { Paper } from "@mui/material";
 import {
   DataGrid,
   GridColDef,
-  GridPaginationModel,
   GridRowId,
   GridRowParams,
   GridRowSelectionModel,
@@ -78,7 +77,8 @@ export default function MuiTableComponent({
               pageSize: pageSize || 10,
             }}
             onPaginationModelChange={(model) =>
-              onPageChange && onPageChange({ page: model.page + 1, pageSize: model.pageSize })
+              onPageChange &&
+              onPageChange({ page: model.page + 1, pageSize: model.pageSize })
             }
             pageSizeOptions={[5, 10, 15, 20]}
             checkboxSelection={showCheckbox}

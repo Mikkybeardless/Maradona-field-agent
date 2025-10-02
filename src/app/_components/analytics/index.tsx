@@ -124,6 +124,15 @@ const Dashboard = () => {
     setCustomDate(customDate);
   };
 
+  const bidIsEmpty =
+    stats.bids.sold_count === 0 &&
+    stats.bids.pending_count === 0 &&
+    stats.bids.rejected_count === 0;
+  const enquiryIsEmpty =
+    stats.enquiries.sold_count === 0 &&
+    stats.enquiries.pending_count === 0 &&
+    stats.enquiries.closed_count === 0;
+
   const bidStatusData = [
     { name: "Sold", value: stats.bids.sold_count, color: "#10B981" },
     { name: "Pending", value: stats.bids.pending_count, color: "#F59E0B" },
@@ -147,6 +156,12 @@ const Dashboard = () => {
       completed: stats.inspections.regular_inspections.completed,
       pending: stats.inspections.regular_inspections.pending,
     },
+  ];
+  const tabNavigations = [
+    "overview",
+    "conversions",
+    "inspections",
+    "performance",
   ];
 
   return (
@@ -192,30 +207,15 @@ const Dashboard = () => {
 
         {/* Tab Navigation */}
         <div className="flex space-x-2">
-          <TabButton
-            id="overview"
-            label="Overview"
-            isActive={activeTab === "overview"}
-            onClick={setActiveTab}
-          />
-          <TabButton
-            id="conversions"
-            label="Conversions"
-            isActive={activeTab === "conversions"}
-            onClick={setActiveTab}
-          />
-          <TabButton
-            id="inspections"
-            label="Inspections"
-            isActive={activeTab === "inspections"}
-            onClick={setActiveTab}
-          />
-          <TabButton
-            id="performance"
-            label="Performance"
-            isActive={activeTab === "performance"}
-            onClick={setActiveTab}
-          />
+          {tabNavigations.map((tab, index) => (
+            <TabButton
+              key={index}
+              id={tab}
+              label={tab}
+              isActive={activeTab === tab}
+              onClick={setActiveTab}
+            />
+          ))}
         </div>
       </div>
 
@@ -287,6 +287,8 @@ const Dashboard = () => {
       {/* Conversions Tab */}
       {activeTab === "conversions" && (
         <ConversionTabSection
+          bidIsEmpty={bidIsEmpty}
+          enquiryIsEmpty={enquiryIsEmpty}
           bidData={bidStatusData}
           enquiryData={enquiryStatusData}
         />
