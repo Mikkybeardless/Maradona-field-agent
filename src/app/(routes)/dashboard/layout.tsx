@@ -1,5 +1,3 @@
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
 import { DashboardNav } from "@/app/_components/dashboard-nav/dashboard-nav";
 import Footer from "@/app/_components/Footer";
 
@@ -8,10 +6,16 @@ export default function AuthLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const token = cookies().get("agent_token")?.value;
-  if (!token) {
-    redirect("/authentication/login");
-  }
+  // const getToken = async () => {
+  //   const token = cookies().get("agent_token")?.value;
+  //   if (!token) {
+  //     redirect("/authentication/login");
+  //   }
+  //   return token;
+  // };
+
+  // const pathName =
+  //   typeof window !== "undefined" ? window.location.pathname : "";
 
   return (
     <section className="bg-[#FAFAFA] relative">

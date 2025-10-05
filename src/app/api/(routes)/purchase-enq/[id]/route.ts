@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 
 export async function GET(
   _: Request,
-  { params }: { params: Promise<{ id: number | string }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const id = (await params).id;
@@ -38,12 +38,12 @@ export async function GET(
 
 export async function POST(
   req: Request,
-  { params }: { params: Promise<{ id: number }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const body = await req.json();
     const id = (await params).id;
-    const response = await purchaseEnqService.scheduleMeeting(id, body);
+    const response = await purchaseEnqService.scheduleMeeting(Number(id), body);
     if (response.status !== 200) {
       return NextResponse.json(
         { message: response.statusText },
@@ -73,12 +73,12 @@ export async function POST(
 
 export async function PUT(
   req: Request,
-  { params }: { params: Promise<{ id: number }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const body = await req.json();
     const id = (await params).id;
-    const response = await purchaseEnqService.updateCompleted(id, body);
+    const response = await purchaseEnqService.updateCompleted(Number(id), body);
     if (response.status !== 200) {
       return NextResponse.json(
         { message: response.statusText },

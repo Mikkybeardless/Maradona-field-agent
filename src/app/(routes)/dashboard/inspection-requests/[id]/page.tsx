@@ -3,9 +3,9 @@ import { InspectionDetailsClient } from "../inspectionDetailsClient";
 export default async function InspectionPage({
   params,
 }: {
-  params: { id: number };
+  params: Promise<{ id: number }>;
 }) {
-  const id = params.id;
+  const id = (await params).id;
 
   return <InspectionDetailsClient id={id} />;
 }

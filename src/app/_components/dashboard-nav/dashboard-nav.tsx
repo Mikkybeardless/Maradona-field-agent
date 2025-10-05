@@ -1,7 +1,9 @@
 "use client";
 import Image from "next/image";
 import logo from "@/app/_assets/images/logo.png";
-import { Chart1, Home2, Notification } from "iconsax-react";
+import * as Iconsax from "iconsax-reactjs";
+const { Chart1, Home2, Notification } = Iconsax;
+
 import Link from "next/link";
 import { useState } from "react";
 import { LogoutModal } from "../modals/logout-modal";
@@ -99,15 +101,18 @@ export const DashboardNav = () => {
     <nav className="fixed md:top-0 bottom-0  left-0 z-20 w-full h-fit ">
       {/* Mobile Nav */}
       <div className="md:hidden bg-white px-4 py-5 rounded-t-lg  w-full flex items-center justify-evenly">
-        {mobileNavigationLinks.map((link) => (
-          <Link
-            key={link.name}
-            href={`/dashboard/${link.href}`}
-            className={`flex items-center gap-2 ${isActiveClass(link.href)}`}
-          >
-            <link.icon size={26} />
-          </Link>
-        ))}
+        {mobileNavigationLinks.map((link) => {
+          const Icon = link.icon;
+          return (
+            <Link
+              key={link.name}
+              href={`/dashboard/${link.href}`}
+              className={`flex items-center gap-2 ${isActiveClass(link.href)}`}
+            >
+              <Icon size={26} color="transparent" className="inline-flex" />
+            </Link>
+          );
+        })}
       </div>
 
       {/* Desktop Nav */}

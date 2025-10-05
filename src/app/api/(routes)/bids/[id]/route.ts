@@ -38,12 +38,12 @@ export async function GET(
 
 export async function POST(
   req: Request,
-  { params }: { params: Promise<{ id: number }> }
+  { params }: { params: Promise<{ id: number | string }> }
 ) {
   try {
     const body = await req.json();
     const id = (await params).id;
-    const response = await bidService.scheduleMeeting(id, body);
+    const response = await bidService.scheduleMeeting(Number(id), body);
     if (response.status !== 200) {
       return NextResponse.json(
         { message: response.statusText },
