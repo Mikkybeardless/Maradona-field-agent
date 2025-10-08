@@ -7,7 +7,7 @@ const notificationService = {
     apiClient.get("/notifications/unread", { params }),
   getStats: (params?: Record<string, string | number>) =>
     apiClient.get("/notifications/stats", { params }),
-  readAll: () => apiClient.post("/notifications"),
+  readAll: () => apiClient.post("/notifications/mark-all-read"),
   readOne: (id: number) => apiClient.post(`/notifications/${id}`),
   delete: (id: number) => apiClient.delete(`/notifications/${id}`),
 };
