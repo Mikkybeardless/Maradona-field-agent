@@ -10,8 +10,8 @@ export default function TimeInput({ value, onChange }: TimeInputProps) {
     <TextField
       label="Select Time"
       type="time"
-      value={value ? value.toISOString().substring(11, 16) : ""}
-      defaultValue="12:30"
+      value={value ? value.toISOString().substring(11, 16) : "17:00"}
+      // defaultValue="12:30"
       InputLabelProps={{
         shrink: true, // makes sure the label doesn’t overlap
       }}

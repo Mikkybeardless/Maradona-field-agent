@@ -4,12 +4,12 @@ import { NextResponse } from "next/server";
 
 export async function POST(
   _: Request,
-  { params }: { params: Promise<{ id: string | number }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // const body = await req.json();
     const id = (await params).id;
-    const response = await notificationService.readOne(Number(id));
+    const response = await notificationService.readOne(id);
     if (response.status !== 200) {
       return NextResponse.json(
         { message: response.statusText },
@@ -44,7 +44,7 @@ export async function DELETE(
   try {
     // const body = await req.json();
     const id = (await params).id;
-    const response = await notificationService.delete(Number(id));
+    const response = await notificationService.delete(id);
     if (response.status !== 200) {
       return NextResponse.json(
         { message: response.statusText },

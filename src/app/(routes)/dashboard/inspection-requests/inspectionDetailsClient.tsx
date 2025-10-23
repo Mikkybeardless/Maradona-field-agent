@@ -57,6 +57,7 @@ export function InspectionDetailsClient({ id }: { id: number }) {
       try {
         const res = await fetchFn(`/api/inspections/${id}`);
         if (res.status === 200) {
+          console.log("inspection details", res.data.data);
           setInspectionDetails(res.data.data);
           const scheduledAt = res.data.data.scheduled_at;
           if (scheduledAt) {
@@ -98,6 +99,12 @@ export function InspectionDetailsClient({ id }: { id: number }) {
       setIsCreating(false);
     }
   };
+
+  // const images = useMemo(() => {
+  //   return (inspectionDetails?.product.media as ApiMedia[]).map(
+  //     (media) => media.file_url
+  //   );
+  // }, [inspectionDetails?.product.media]);
 
   return loading ? (
     <DetailLoadingState message="Loading inspection details..." />
@@ -141,7 +148,7 @@ export function InspectionDetailsClient({ id }: { id: number }) {
         <section>
           <header className="flex items-center justify-between mb-16">
             <h6 className="text-black text-2xl font-semibold">
-              Inspection Detail
+              Inspection Details
             </h6>
 
             {/* Desktop */}
@@ -169,9 +176,11 @@ export function InspectionDetailsClient({ id }: { id: number }) {
             <div className="flex flex-col md:flex-row gap-10 items-start justify-between">
               {/* Left */}
               <section className="w-full md:w-[50%] ">
-                <ProductCarousel
-                  images={inspectionDetails?.product.media || []}
-                />
+                {(inspectionDetails?.product?.media?.length ?? 0) > 0 && (
+                  <ProductCarousel
+                    images={inspectionDetails?.product?.media as ApiMedia[]}
+                  />
+                )}
               </section>
               {/* right */}
               <section className="w-full  md:w-[50%] ">
@@ -221,7 +230,7 @@ export function InspectionDetailsClient({ id }: { id: number }) {
 
                     {schedule.date.trim() && schedule.time.trim() && (
                       <div className="space-y-3 ">
-                        <div className="p-4 bg-[#DCFAE6] rounded-xl"> 
+                        <div className="p-4 bg-[#DCFAE6] rounded-xl">
                           <div className="flex items-center gap-2 mb-3">
                             <RiErrorWarningLine size={24} />
                             <p className="text-[#585858]">

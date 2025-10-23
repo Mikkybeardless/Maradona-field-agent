@@ -1,8 +1,9 @@
 "use client";
 import { useState } from "react";
 import { BiChevronLeft, BiChevronRight } from "react-icons/bi";
+import Image from "next/image";
 
-export default function ProductCarousel({ images }: { images: string[] }) {
+export default function ProductCarousel({ images }: { images: ApiMedia[] }) {
   // Sample product images (using placeholders)
   // const images = [image1, image2, image3, image4];
 
@@ -41,11 +42,13 @@ export default function ProductCarousel({ images }: { images: string[] }) {
           </div>
 
           {/* Main image container */}
-          <div className="flex-grow w-40 md:w-[486px] h-fit max-h-96  overflow-hidden mb-4">
-            <img
-              src={images[currentIndex]}
+          <div className="flex-grow relative w-40 md:w-[317px] h-60 max-h-96  overflow-hidden mb-4">
+            <Image
+              src={images[currentIndex].file_url}
               alt={`Product image ${currentIndex + 1}`}
-              className="w-full h-full object-contain"
+              fill
+              className="object-cover  rounded-xl"
+              sizes="(max-width: 768px) 160px, 486px"
             />
           </div>
 
@@ -75,7 +78,7 @@ export default function ProductCarousel({ images }: { images: string[] }) {
               aria-label={`View image ${index + 1}`}
             >
               <img
-                src={image}
+                src={image.file_url}
                 alt={`Thumbnail ${index + 1}`}
                 className="w-full h-full rounded-md object-cover"
               />

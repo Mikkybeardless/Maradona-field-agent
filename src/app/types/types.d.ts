@@ -43,6 +43,43 @@ declare interface Product {
   auction_type: ProductAuctionType;
 }
 
+declare interface ApiMedia {
+  id: string | null;
+  file_name: string;
+  file_path: string;
+  file_url: string;
+  file_extension: string;
+  file_size: number;
+  uploaded_on: string | null;
+  details: string | null;
+  readable_name: string;
+}
+declare interface ApiProduct {
+  name: string;
+  type: ProductType;
+  description: string;
+  category_id: string;
+  price: number;
+  sale_price: number;
+  continue_selling: boolean;
+  state: string;
+  weight_unit: WeightUnit;
+  sku: string;
+  media: ApiMedia[];
+  documents: ApiMedia[];
+  status: ProductStatus;
+  tags: number[];
+  inventory: number;
+  // weight: number;
+  // duration: ProductDuration | null;
+  auction_duration: number | null;
+  condition: ProductCondition | null;
+  auction_type: ProductAuctionType;
+  location_city: string | null;
+  location_state: string | null;
+  location_address: string | null;
+}
+
 declare interface Auction {
   name: string;
   type: string;
@@ -84,7 +121,25 @@ declare interface House extends Product {
   fencing: ProductFencing;
 }
 
+declare interface ApiHouse extends ApiProduct {
+  house_type: string;
+  house_beds: number;
+  house_furnished: ProductFurnishedStatus;
+  house_condition: HouseCondition;
+  house_size: number;
+  accessibility: ProductAccessibility;
+  topography: ProductTopography;
+  fencing: ProductFencing;
+}
+
 declare interface Land extends Product {
+  land_type: ProductLandType;
+  land_size: number;
+  accessibility: ProductAccessibility;
+  topography: ProductTopography;
+  fencing: ProductFencing;
+}
+declare interface ApiLand extends ApiProduct {
   land_type: ProductLandType;
   land_size: number;
   accessibility: ProductAccessibility;
@@ -98,7 +153,16 @@ declare interface Car extends Product {
   mileage: string;
   gear_type: ProductGearType | null;
 }
+declare interface ApiCar extends ApiProduct {
+  body_type: ProductBodyType;
+  engine_type: string;
+  transmission: string;
+  mileage: string;
+  gear_type: ProductGearType | null;
+}
+
 declare type ProductDetails = House | Land | Car;
+declare type ApiProductDetails = ApiHouse | ApiLand | ApiCar;
 declare interface ApiProduct extends Product {
   id: number;
   created_at: string;
@@ -153,7 +217,7 @@ declare interface Inspection {
   assigned_at: string;
   completed_at: string;
   auction_product: null;
-  product: ProductDetails & {
+  product: ApiProductDetails & {
     id: number;
     created_at: string;
     updated_at: string;

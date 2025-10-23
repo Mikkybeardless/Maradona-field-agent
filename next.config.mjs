@@ -14,7 +14,17 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "ds.reconnaissancetechnologies.com",
+        hostname: "res.cloudinary.com",
+        pathname: "/daiprengq/**",
+      },
+      {
+        protocol: "http",
+        hostname: "dsstaging.eu-north-1.elasticbeanstalk.com",
+        pathname: "/uploads/**",
+      },
+      {
+        protocol: "https",
+        hostname: "https://ds.reconnaissancetechnologies.com",
         pathname: "/uploads/**",
       },
     ],

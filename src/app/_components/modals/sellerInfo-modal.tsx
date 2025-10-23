@@ -14,7 +14,7 @@ interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   seller?: Seller;
-  product?: Product;
+  product?: ApiProductDetails;
 }
 
 export const SellerInfoModal: React.FC<ModalProps> = ({
@@ -88,7 +88,7 @@ export const SellerInfoModal: React.FC<ModalProps> = ({
           <h3 className="text-[#585858] font-semibold">Property Details</h3>
           <div className="flex gap-4">
             <Image
-              src={product?.media[0] || house}
+              src={product?.media[0].file_url || house}
               width={130}
               height={70}
               alt="house image"
