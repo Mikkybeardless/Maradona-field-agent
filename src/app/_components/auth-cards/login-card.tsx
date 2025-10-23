@@ -45,14 +45,14 @@ export const LoginCard = () => {
       });
 
       if (response.status == 200) {
-        const data = response.data.data;
-        dispatch(login(data.user));
-        // Set cookies
-        Cookies.set("agent_token", data.token);
-        toast.success("Login successful");
-        // Redirect
-        router.push("/dashboard/overview");
-      }
+			const data = response.data.data;
+			dispatch(login(data.user));
+			// Set cookies
+			Cookies.set("agent_token", data.token);
+			router.push("/dashboard/overview");
+			toast.success("Login successful");
+			// Redirect
+		}
     } catch (err: unknown) {
       console.error("Login error:", err);
       setError(() => {
