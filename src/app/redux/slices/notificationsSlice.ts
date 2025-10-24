@@ -42,7 +42,7 @@ export const fetchNotificationStats = createAsyncThunk(
   "notifications/fetchNotificationStats",
   async () => {
     const response = await fetchFn("/api/notifications/stats");
-    return response.data;
+    return response.data.data;
   }
 );
 

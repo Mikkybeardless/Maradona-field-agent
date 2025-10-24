@@ -2,7 +2,7 @@ import notificationService from "@/app/api/services/notifications.service";
 import { AxiosError } from "axios";
 import { NextResponse } from "next/server";
 
-export async function POST(
+export async function PUT(
   _: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
