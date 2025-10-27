@@ -1,7 +1,10 @@
 "use client";
 
+import { validateLocalBankDetails } from "@/app/helper/helperFunction";
+import axios from "axios";
 import { Add } from "iconsax-react";
 import { useState } from "react";
+import { toast } from "react-toastify";
 
 interface ModalProps {
   isOpen: boolean;
@@ -22,6 +25,7 @@ export const EditPaymentModal: React.FC<ModalProps> = ({
     bank_name,
     bank_account_number,
   });
+  const [isLoading, setIsLoading] = useState(false);
   if (!isOpen) return null;
 
   const handleBackgroundClick = (
@@ -31,10 +35,39 @@ export const EditPaymentModal: React.FC<ModalProps> = ({
       onClose();
     }
   };
+  const updateProfile = async (data: UpdateProfileDto) => {
+    setIsLoading(true);
 
+    try {
+      const res = await axios.put("/api/auth/profile", data);
+      if (res.status === 200) {
+        toast.success("Profile updated successfully");
+        onClose();
+      }
+    } catch (error) {
+      toast.error("Error updating profile");
+      console.error("Error updating profile:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
   const handleUpdate = () => {
+    const result = validateLocalBankDetails(
+      accountDetails.bank_name,
+      accountDetails.bank_account_number
+    );
+    if (!result.isValid) {
+      toast.error(
+        result.errors.accountName ||
+          result.errors.accountNumber ||
+          "Invalid bank details"
+      );
+      return;
+    }
+    // check if accountdetails is valid
     onChange("bank_name", accountDetails.bank_name);
     onChange("bank_account_number", accountDetails.bank_account_number);
+    updateProfile(accountDetails);
     onClose();
   };
 
@@ -111,7 +144,7 @@ export const EditPaymentModal: React.FC<ModalProps> = ({
             onClick={handleUpdate}
             className="px-10 py-2.5 rounded-lg border-orange bg-orange text-white border focus:outline-none"
           >
-            Update
+            {isLoading ? "Updating..." : "Update"}
           </button>
         </div>
       </div>

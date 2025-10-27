@@ -8,7 +8,6 @@ import { LogoutModal } from "@/app/_components/modals/logout-modal";
 import { EditPaymentModal } from "@/app/_components/modals/payment-modal";
 import ProfilePictureUpload from "@/app/_components/ProfilePictureUpload";
 import { fetchFn } from "@/app/api/fetchFn";
-import { appendField } from "@/app/helper/helperFunction";
 import axios from "axios";
 import { ArrowRight2, Copy } from "iconsax-react";
 import Cookies from "js-cookie";
@@ -104,12 +103,9 @@ export default function Page() {
 
   const updateProfile = async (data: UpdateProfileDto) => {
     setUpdating(true);
-    const formData = new FormData();
-    for (const [key, value] of Object.entries(data)) {
-      appendField(formData, key, value);
-    }
+
     try {
-      const res = await axios.put("/api/auth/profile", formData);
+      const res = await axios.put("/api/auth/profile", data);
       if (res.status === 200) {
         toast.success("Profile updated successfully");
         setAgentProfile(res.data.data);
@@ -161,9 +157,6 @@ export default function Page() {
             email: agentProfile.user.email,
             phone: agentProfile.profile.phone,
             location: agentProfile.profile.location,
-          }}
-          onSubmit={(data) => {
-            setFormData((prev) => ({ ...prev, ...data }));
           }}
           isOpen={isEditing}
           onClose={() => setIsEditing(false)}

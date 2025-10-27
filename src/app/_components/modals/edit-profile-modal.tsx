@@ -1,7 +1,9 @@
 "use client";
 
+import axios from "axios";
 import { Add } from "iconsax-react";
 import { useState } from "react";
+import { toast } from "react-toastify";
 
 interface ModalProps {
   isOpen: boolean;
@@ -12,13 +14,11 @@ interface ModalProps {
     phone: string;
     location: string;
   };
-  onSubmit?: (data: Record<string, string>) => void;
 }
 
 export const EditProfileModal = ({
   isOpen,
   onClose,
-  onSubmit,
   controlledData,
 }: ModalProps) => {
   const [formData, setFormData] = useState({
@@ -27,6 +27,7 @@ export const EditProfileModal = ({
     phone: controlledData.phone,
     location: controlledData.location,
   });
+  const [isLoading, setIsLoading] = useState(false);
 
   if (!isOpen) return null;
 
@@ -38,10 +39,26 @@ export const EditProfileModal = ({
     }
   };
 
+  const updateProfile = async (data: UpdateProfileDto) => {
+    setIsLoading(true);
+
+    try {
+      const res = await axios.put("/api/auth/profile", data);
+      if (res.status === 200) {
+        toast.success("Profile updated successfully");
+        onClose();
+      }
+    } catch (error) {
+      toast.error("Error updating profile");
+      console.error("Error updating profile:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    onSubmit?.(formData);
-    onClose();
+    updateProfile(formData);
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -139,7 +156,7 @@ export const EditProfileModal = ({
               disabled={!formData.name || !formData.email || !formData.phone}
               className="px-10 py-2.5 rounded-lg border-orange bg-orange text-white border focus:outline-none"
             >
-              Update
+              {isLoading ? "Updating..." : "Update"}
             </button>
           </div>
         </form>

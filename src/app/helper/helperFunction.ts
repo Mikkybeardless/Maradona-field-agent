@@ -120,3 +120,38 @@ export function appendField(
     formData.append(key, String(value));
   }
 }
+
+/**
+ * Validate Nigerian bank account name and number locally.
+ * @param {string} bankName - The name entered by the user.
+ * @param {string} accountNumber - The bank account number (expected 10 digits).
+ * @returns {{ isValid: boolean, errors: Record<string, string> }}
+ */
+export function validateLocalBankDetails(
+  bankName: string,
+  accountNumber: string
+) {
+  const errors: Record<string, string> = {};
+
+  // --- Validate account name ---
+  if (!bankName || typeof bankName !== "string" || bankName.trim().length < 2) {
+    errors.bankName = "Account name must be at least 2 characters long.";
+  } else if (!/^[a-zA-Z\s.'-]+$/.test(bankName.trim())) {
+    errors.bankName =
+      "Bank name can only contain letters, spaces, dots, hyphens, and apostrophes.";
+  }
+
+  // --- Validate account number ---
+  if (!accountNumber || typeof accountNumber !== "string") {
+    errors.accountNumber = "Account number is required.";
+  } else if (!/^\d+$/.test(accountNumber)) {
+    errors.accountNumber = "Account number must contain only digits.";
+  } else if (accountNumber.length !== 10) {
+    errors.accountNumber = "Account number must be exactly 10 digits.";
+  }
+
+  return {
+    isValid: Object.keys(errors).length === 0,
+    errors,
+  };
+}
