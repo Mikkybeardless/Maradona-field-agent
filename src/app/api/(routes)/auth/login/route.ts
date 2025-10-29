@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
 
     // ✅ Properly set the cookie on the *response instance*
     if (token) {
-      res.cookies.set("buyer_token", token, {
+      res.cookies.set("agent_token", token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         path: "/",

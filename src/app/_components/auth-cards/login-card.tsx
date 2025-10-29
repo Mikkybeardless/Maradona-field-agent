@@ -1,7 +1,6 @@
 "use client";
 import Link from "next/link";
 import { useState } from "react";
-import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import { Spinner } from "../common/spinner";
@@ -45,14 +44,13 @@ export const LoginCard = () => {
       });
 
       if (response.status == 200) {
-			const data = response.data.data;
-			dispatch(login(data.user));
-			// Set cookies
-			Cookies.set("agent_token", data.token);
-			router.push("/dashboard/overview");
-			toast.success("Login successful");
-			// Redirect
-		}
+        const data = response.data.data;
+        dispatch(login(data.user));
+        // Set cookies
+        router.push("/dashboard/overview");
+        toast.success("Login successful");
+        // Redirect
+      }
     } catch (err: unknown) {
       console.error("Login error:", err);
       setError(() => {

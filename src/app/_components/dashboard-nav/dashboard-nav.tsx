@@ -7,17 +7,20 @@ const { Chart1, Home2, Notification } = Iconsax;
 import Link from "next/link";
 import { useState } from "react";
 import { LogoutModal } from "../modals/logout-modal";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { IoReceiptOutline } from "react-icons/io5";
 import { FaRegUserCircle } from "react-icons/fa";
 import { toast } from "react-toastify";
 import axios from "axios";
-import Cookies from "js-cookie";
+import { useDispatch } from "react-redux";
+import { logout } from "@/app/redux/slices/authSlice";
 
 export const DashboardNav = () => {
   const [isLogoutModal, setIsLogoutModal] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const pathName = usePathname();
+  const router = useRouter();
+  const dispatch = useDispatch();
   const NavigationLinks = [
     {
       name: "Home",
@@ -82,13 +85,9 @@ export const DashboardNav = () => {
       setIsLoggingOut(true);
       const res = await axios.post("/api/auth/logout");
       if (res.status === 200) {
+        dispatch(logout());
         toast.success("Logout successful");
-        Cookies.remove("agent_token");
-        window.location.href = "/authentication/login";
-        console.log("Logout successful:", res.data);
-      } else {
-        toast.error("logout failed. pls try again");
-        console.error("Logout failed:", res.data);
+        router.push("/authentication/login");
       }
     } catch (error) {
       console.error("Logout failed:", error);

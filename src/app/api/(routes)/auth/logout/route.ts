@@ -12,8 +12,8 @@ export async function POST() {
       { status: response.status || 200 }
     );
 
-    // ✅ Clear the buyer_token cookie
-    res.cookies.set("buyer_token", "", {
+    // ✅ Clear the agent_token cookie
+    res.cookies.set("agent_token", "", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       path: "/",
