@@ -11,7 +11,14 @@ export const PerformanceSection = ({ stats }: PerformanceSectionProps) => {
         <h3 className="text-lg font-semibold text-gray-800 mb-4">
           Monthly Conversion Trends
         </h3>
-        <ReusableAreaChart data={stats.performance.data} />
+
+        {stats.performance.data.length > 0 ? (
+          <ReusableAreaChart data={stats.performance.data} />
+        ) : (
+          <div className="flex justify-center mt-4 space-x-4">
+            <p className="text-gray-500">No activity yet</p>
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -19,7 +26,13 @@ export const PerformanceSection = ({ stats }: PerformanceSectionProps) => {
           <h3 className="text-lg font-semibold text-gray-800 mb-4">
             Enquiries vs Bids Trend
           </h3>
-          <ReuseableLinchart data={stats.performance.data} />
+          {stats.performance.data.length > 0 ? (
+            <ReuseableLinchart data={stats.performance.data} />
+          ) : (
+            <div className="flex justify-center mt-4 space-x-4">
+              <p className="text-gray-500">No activity yet</p>
+            </div>
+          )}
         </div>
 
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
