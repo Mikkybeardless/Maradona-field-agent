@@ -32,7 +32,7 @@ export const ApproveModal: React.FC<ModalProps> = ({ isOpen, onClose, id }) => {
     };
     try {
       setIsSubmitting(true);
-      const response = await axios.post(`/api/inspections/${id}`, submitData);
+      const response = await axios.put(`/api/inspections/${id}`, submitData);
       if (response.status === 200) {
         toast.success("Inspection approved successfully.");
         onClose();
@@ -66,9 +66,9 @@ export const ApproveModal: React.FC<ModalProps> = ({ isOpen, onClose, id }) => {
         <section className="grid grid-cols-1  gap-y-4">
           <div className="border-l-2 border-orange p-4 mb-4 bg-[#FFFAEB]">
             <p>
-              &qout;Approving this property means you&apos;ve verified all
+              &quot;Approving this property means you&apos;ve verified all
               necessary details during inspection. This action cannot be
-              undone.&qout;
+              undone.&quot;
             </p>
           </div>
           <div className="space-y-1.5">

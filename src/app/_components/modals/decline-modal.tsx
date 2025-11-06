@@ -33,7 +33,7 @@ export const DeclineModal: React.FC<ModalProps> = ({ isOpen, onClose, id }) => {
     };
     try {
       setIsSubmitting(true);
-      const response = await axios.post(`/api/inspections/${id}`, submitData);
+      const response = await axios.put(`/api/inspections/${id}`, submitData);
       if (response.status === 200) {
         toast.success("Inspection declined successfully.");
         onClose();
