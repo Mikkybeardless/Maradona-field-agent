@@ -8,6 +8,7 @@ import { useRef, useState } from "react";
 import {
   formatDateToYYYYMMDD,
   formatIsoString,
+  formatPrice,
   formatTimeToHHMMSS,
 } from "@/app/helper/helperFunction";
 import { toast } from "react-toastify";
@@ -57,7 +58,7 @@ export const inspectionColumns: GridColDef[] = [
     renderCell: ({ value }) => {
       return (
         <span
-          className={`flex gap-x-1 items-center justify-center w-[100px] my-2 px-2 py-1 rounded-full font-medium text-sm
+          className={`flex gap-x-1 items-center capitalize justify-center w-[100px] my-2 px-2 py-1 rounded-full font-medium text-sm
               ${getStatusClass(value)}`}
         >
           <GoDotFill size={20} /> {value}
@@ -192,7 +193,7 @@ export const bidsColumns: GridColDef[] = [
     renderCell: ({ value }) => {
       return (
         <span
-          className={`flex gap-x-1 items-center justify-center w-[100px] my-2 px-2 py-1 rounded-full font-medium text-sm
+          className={`flex gap-x-1 items-center capitalize justify-center w-[100px] my-2 px-2 py-1 rounded-full font-medium text-sm
               ${getStatusClassBids(value)}`}
         >
           <GoDotFill size={20} /> {value}
@@ -356,8 +357,11 @@ const getStatusClassBids = (status: string) => {
 
 export const purchaseEnqColumns: GridColDef[] = [
   {
-    field: "purchase_enquiry_id",
-    headerName: "Enquiry ID",
+    field: "product",
+    headerName: "Product Name",
+    renderCell: ({ row }) => (
+      <span className="font-medium">{row.purchase_enquiry?.product?.name}</span>
+    ),
     flex: 0.5,
   },
   {
@@ -373,10 +377,19 @@ export const purchaseEnqColumns: GridColDef[] = [
   {
     field: "quantity",
     headerName: "Quantity",
-    flex: 0.5,
+    flex: 0.3,
     renderCell: ({ row }) => (
-      <span className="font-medium">{row.purchase_enquiry?.qty_sold}</span>
+      <span className="font-medium">
+        {row.purchase_enquiry?.qty_sold || "1"}
+      </span>
     ),
+  },
+  {
+    field: "price",
+    headerName: "Price(₦)",
+    renderCell: ({ row }) =>
+      formatPrice(Number(row.purchase_enquiry?.product?.sale_price) || 0),
+    flex: 0.7,
   },
   {
     field: "created_at",
@@ -391,7 +404,7 @@ export const purchaseEnqColumns: GridColDef[] = [
         </span>
       );
     },
-    flex: 0.8,
+    flex: 0.5,
   },
   {
     field: "status",
@@ -400,7 +413,7 @@ export const purchaseEnqColumns: GridColDef[] = [
     renderCell: ({ value }) => {
       return (
         <span
-          className={`flex gap-x-1 items-center justify-center w-[100px] my-2 px-2 py-1 rounded-full font-medium text-sm
+          className={`flex gap-x-1 capitalize items-center justify-center w-[100px] my-2 px-2 py-1 rounded-full font-medium text-sm
               ${getStatusClassPurchaseEnquiry(value)}`}
         >
           <GoDotFill size={20} /> {value}
@@ -410,7 +423,7 @@ export const purchaseEnqColumns: GridColDef[] = [
   },
   {
     field: "Action",
-    flex: 0.5,
+    flex: 0.3,
     renderCell: ({ row }) => {
       return (
         <PurchaseActionCellComponent rowId={row.id} rowStatus={row.status} />

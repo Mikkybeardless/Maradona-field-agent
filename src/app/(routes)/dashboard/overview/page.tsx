@@ -29,6 +29,7 @@ import DynamicNav from "@/app/_components/DynamicTab";
 import { MetricCard } from "@/app/_components/analytics/metricCard";
 import { DollarSign, Target, Users } from "lucide-react";
 import { SquareLoader } from "@/app/_components/common/squareLoader";
+import EnquiryDetailModal from "@/app/_components/modals/EnquiryDetailsModal";
 
 type IFilter = {
   type: string;
@@ -60,7 +61,8 @@ export default function Page() {
     bids: [],
   });
   const [tab, setTab] = useState<TabState>("purchase-enquiries");
-
+  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+  const [activeEnquiry, setActiveEnquiry] = useState<any | null>(null);
   // purchase enquiry
   const [purchaseEnqData, setPurchaseEnqData] = useState({
     rows: [],
@@ -347,6 +349,12 @@ export default function Page() {
         selectedData={selectedData.bids}
       />
 
+      <EnquiryDetailModal
+        open={!!activeEnquiry}
+        onClose={() => setActiveEnquiry(null)}
+        data={activeEnquiry}
+      />
+
       <header className=" px-2 md:px-6 py-4 space-y-6">
         {/* <div className="flex  justify-between items-end bg-[#FFEFE6] border border-[#FEB68A] rounded-lg px-5 py-4">
           <button className="hover:underline">Add Payment Info</button>
@@ -539,6 +547,10 @@ export default function Page() {
                 loading={purchaseEnqData.loading}
                 currentPage={purchaseEnqData.pagination.page}
                 totalRowCount={purchaseEnqData.totalRowCount}
+                onRowClick={(item) => {
+                  console.log("Clicked row:", item.row);
+                  setActiveEnquiry(item.row.purchase_enquiry);
+                }}
                 onPageChange={(model) => {
                   setPurchaseEnqData((prev) => ({
                     ...prev,

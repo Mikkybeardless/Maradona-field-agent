@@ -155,3 +155,8 @@ export function validateLocalBankDetails(
     errors,
   };
 }
+
+export function formatPrice(price: number) {
+  const internationalNumberFormat = new Intl.NumberFormat("en-US");
+  return internationalNumberFormat.format(price);
+}
